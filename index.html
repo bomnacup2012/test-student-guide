@@ -738,9 +738,271 @@
             </button>
           </div>
 
-          <!-- Article Body Content -->
-          <div class="p-6 sm:p-8 content-prose space-y-6" :class="fontSize">
-            <!-- Key Highlight Callout Box -->
+          <!-- Article Body Content: Visual-First & Dual-Layer Architecture -->
+          <div class="p-6 sm:p-8 content-prose space-y-8" :class="fontSize">
+
+            <!-- =========================================================== -->
+            <!-- LAYER 1: KEY SUMMARY BOX (สรุปเข้าใจใน 5 วินาที)             -->
+            <!-- =========================================================== -->
+            <section
+              x-show="currentTopic.keySummary && currentTopic.keySummary.length > 0"
+              class="rounded-2xl bg-gradient-to-br from-orange-50 via-amber-50/60 to-white border-2 border-rmuti-200 p-5 sm:p-6 shadow-xs relative overflow-hidden"
+            >
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-rmuti-200/70">
+                <div class="flex items-center gap-2">
+                  <span class="w-8 h-8 rounded-xl bg-rmuti-600 text-white flex items-center justify-center shadow-xs">
+                    <i data-lucide="zap" class="w-4 h-4"></i>
+                  </span>
+                  <div>
+                    <h2 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">สรุปเข้าใจใน 5 วินาที (Key Summary)</h2>
+                    <p class="text-[11px] text-slate-500 font-sans">อ่านสรุปสั้นๆ ก่อนดูแผนภาพขั้นตอนและระเบียบฉบับเต็มด้านล่าง</p>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rmuti-600 text-white uppercase tracking-wider font-sans">
+                  TL;DR • 5 วินาที
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 font-sans">
+                <template x-for="(item, idx) in currentTopic.keySummary" :key="idx">
+                  <div class="bg-white/95 rounded-xl p-3.5 border border-orange-200/80 shadow-2xs flex flex-col gap-1.5">
+                    <div class="flex items-center gap-2">
+                      <span
+                        :class="{
+                          'bg-blue-100 text-blue-700': item.badgeColor === 'blue',
+                          'bg-emerald-100 text-emerald-700': item.badgeColor === 'green',
+                          'bg-rose-100 text-rose-700': item.badgeColor === 'red',
+                          'bg-amber-100 text-amber-800': !item.badgeColor || item.badgeColor === 'orange'
+                        }"
+                        class="px-2 py-0.5 rounded-md text-[11px] font-bold inline-flex items-center gap-1"
+                      >
+                        <i :data-lucide="item.icon || 'check-circle'" class="w-3.5 h-3.5"></i>
+                        <span x-text="item.label"></span>
+                      </span>
+                    </div>
+                    <p
+                      class="text-xs sm:text-sm font-medium text-slate-800 leading-relaxed"
+                      x-html="highlightText(item.text, activeHighlightTerm)"
+                    ></p>
+                  </div>
+                </template>
+              </div>
+            </section>
+
+            <!-- =========================================================== -->
+            <!-- LAYER 2A: VISUAL STEPPER / FLOWCHART (สำหรับหมวดขั้นตอน)     -->
+            <!-- =========================================================== -->
+            <section
+              x-show="currentTopic.visualStepper"
+              class="rounded-2xl bg-slate-50 border border-slate-200/90 p-5 sm:p-6 font-sans"
+            >
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-5">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-8 h-8 rounded-xl bg-navy-900 text-white flex items-center justify-center">
+                    <i data-lucide="git-commit-horizontal" class="w-4 h-4 text-rmuti-400"></i>
+                  </span>
+                  <div>
+                    <h3 class="text-sm sm:text-base font-bold text-slate-900" x-text="currentTopic.visualStepper?.title"></h3>
+                    <p class="text-xs text-slate-500" x-text="currentTopic.visualStepper?.subtitle"></p>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-semibold text-slate-600">
+                  Visual Flowchart
+                </span>
+              </div>
+
+              <!-- Responsive Horizontal / Vertical Stepper -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 relative">
+                <template x-for="(step, sIdx) in (currentTopic.visualStepper?.steps || [])" :key="sIdx">
+                  <div class="relative bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs hover:border-rmuti-400 transition flex flex-col justify-between">
+                    <div>
+                      <!-- Step Number & Icon Header -->
+                      <div class="flex items-center justify-between gap-2 mb-3">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rmuti-600 text-white text-xs font-bold shadow-2xs">
+                          <span x-text="'ขั้นที่ ' + (sIdx + 1)"></span>
+                        </span>
+                        <div class="w-9 h-9 rounded-xl bg-orange-50 text-rmuti-600 flex items-center justify-center border border-orange-200/60">
+                          <i :data-lucide="step.icon || 'file-check'" class="w-4 h-4"></i>
+                        </div>
+                      </div>
+                      <!-- Step Title -->
+                      <h4
+                        class="font-bold text-sm text-slate-900 mb-1.5 leading-snug"
+                        x-html="highlightText(step.title, activeHighlightTerm)"
+                      ></h4>
+                      <!-- Step Detail -->
+                      <p
+                        class="text-xs text-slate-600 leading-relaxed"
+                        x-html="highlightText(step.desc, activeHighlightTerm)"
+                      ></p>
+                    </div>
+
+                    <!-- Location / Actor Footer Pill -->
+                    <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                      <span class="font-semibold text-rmuti-700 flex items-center gap-1">
+                        <i data-lucide="map-pin" class="w-3 h-3 text-rmuti-500 shrink-0"></i>
+                        <span x-text="step.place"></span>
+                      </span>
+                      <i
+                        x-show="sIdx < (currentTopic.visualStepper?.steps?.length - 1)"
+                        data-lucide="arrow-right"
+                        class="w-3.5 h-3.5 text-slate-400 hidden lg:inline"
+                      ></i>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </section>
+
+            <!-- =========================================================== -->
+            <!-- LAYER 2B: VISUAL STATUS CARDS (เขียว/เหลือง/แดง สำหรับเกณฑ์)  -->
+            <!-- =========================================================== -->
+            <section
+              x-show="currentTopic.statusCards"
+              class="rounded-2xl bg-slate-50 border border-slate-200/90 p-5 sm:p-6 font-sans"
+            >
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-8 h-8 rounded-xl bg-navy-900 text-white flex items-center justify-center">
+                    <i data-lucide="gauge" class="w-4 h-4 text-rmuti-400"></i>
+                  </span>
+                  <div>
+                    <h3 class="text-sm sm:text-base font-bold text-slate-900" x-text="currentTopic.statusCards?.title"></h3>
+                    <p class="text-xs text-slate-500" x-text="currentTopic.statusCards?.subtitle"></p>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-semibold text-slate-600">
+                  Visual Status Meter
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <template x-for="(card, cIdx) in (currentTopic.statusCards?.items || [])" :key="cIdx">
+                  <div
+                    :class="{
+                      'bg-emerald-50/90 border-emerald-300 text-emerald-950': card.color === 'green',
+                      'bg-amber-50/90 border-amber-300 text-amber-950': card.color === 'yellow',
+                      'bg-rose-50/90 border-rose-300 text-rose-950': card.color === 'red'
+                    }"
+                    class="rounded-2xl p-4 sm:p-5 border-2 shadow-2xs flex flex-col justify-between"
+                  >
+                    <div>
+                      <div class="flex items-center justify-between gap-2 mb-3">
+                        <span
+                          :class="{
+                            'bg-emerald-600 text-white': card.color === 'green',
+                            'bg-amber-500 text-white': card.color === 'yellow',
+                            'bg-rose-600 text-white': card.color === 'red'
+                          }"
+                          class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide"
+                          x-text="card.badge"
+                        ></span>
+                        <i :data-lucide="card.icon || 'shield-alert'" class="w-5 h-5 opacity-75"></i>
+                      </div>
+
+                      <div class="text-xl sm:text-2xl font-extrabold tracking-tight mb-1" x-text="card.metric"></div>
+                      <h4 class="font-bold text-sm mb-2" x-text="card.title"></h4>
+                      <p class="text-xs leading-relaxed opacity-90" x-html="highlightText(card.desc, activeHighlightTerm)"></p>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-black/10 text-[11px] font-semibold flex items-center gap-1.5">
+                      <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5 shrink-0"></i>
+                      <span x-text="card.action"></span>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </section>
+
+            <!-- =========================================================== -->
+            <!-- LAYER 2C: DO & DON'T IMAGE GALLERY + LIGHTBOX TRIGGER       -->
+            <!-- =========================================================== -->
+            <section
+              x-show="currentTopic.visualGallery"
+              class="rounded-2xl bg-slate-50 border border-slate-200/90 p-5 sm:p-6 font-sans"
+            >
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-8 h-8 rounded-xl bg-navy-900 text-white flex items-center justify-center">
+                    <i data-lucide="image" class="w-4 h-4 text-rmuti-400"></i>
+                  </span>
+                  <div>
+                    <h3 class="text-sm sm:text-base font-bold text-slate-900" x-text="currentTopic.visualGallery?.title"></h3>
+                    <p class="text-xs text-slate-500">คลิกที่รูปภาพเพื่อเปิดดูขนาดใหญ่ (Image Lightbox) บนหน้าจอมือถือ</p>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-rmuti-100 text-rmuti-700 text-[11px] font-bold flex items-center gap-1">
+                  <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i> คลิกดูภาพขยายได้
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <template x-for="(img, gIdx) in (currentTopic.visualGallery?.items || [])" :key="gIdx">
+                  <div
+                    @click="openLightbox(img)"
+                    class="group bg-white rounded-2xl border-2 overflow-hidden shadow-2xs hover:shadow-lg transition cursor-pointer flex flex-col"
+                    :class="{
+                      'border-emerald-300 hover:border-emerald-500': img.type === 'do',
+                      'border-rose-300 hover:border-rose-500': img.type === 'dont',
+                      'border-slate-200 hover:border-rmuti-500': img.type === 'info'
+                    }"
+                  >
+                    <!-- Image Container with Do / Don't Badge -->
+                    <div class="relative h-48 sm:h-52 bg-slate-900 overflow-hidden">
+                      <img
+                        :src="img.imageUrl"
+                        :alt="img.title"
+                        class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                      />
+                      <!-- Top Left Do / Don't Pill -->
+                      <div class="absolute top-3 left-3">
+                        <span
+                          :class="{
+                            'bg-emerald-600 text-white': img.type === 'do',
+                            'bg-rose-600 text-white': img.type === 'dont',
+                            'bg-navy-900/90 text-white': img.type === 'info'
+                          }"
+                          class="px-3 py-1 rounded-full text-xs font-bold shadow-md inline-flex items-center gap-1.5"
+                        >
+                          <i :data-lucide="img.type === 'do' ? 'check-circle-2' : (img.type === 'dont' ? 'x-circle' : 'sparkles')" class="w-3.5 h-3.5"></i>
+                          <span x-text="img.badge"></span>
+                        </span>
+                      </div>
+                      <!-- Bottom Right Zoom Hint -->
+                      <div class="absolute bottom-3 right-3 bg-navy-900/80 backdrop-blur-xs text-white px-2.5 py-1 rounded-lg text-[11px] font-medium flex items-center gap-1 group-hover:bg-rmuti-600 transition">
+                        <i data-lucide="maximize-2" class="w-3 h-3"></i>
+                        <span>คลิกขยาย</span>
+                      </div>
+                    </div>
+
+                    <!-- Caption & Key Checkpoints -->
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h4 class="font-bold text-sm text-slate-900 mb-1" x-text="img.title"></h4>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3" x-text="img.caption"></p>
+                      </div>
+                      <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
+                        <template x-for="(pt, pIdx) in (img.points || [])" :key="pIdx">
+                          <span
+                            :class="{
+                              'bg-emerald-50 text-emerald-700 border-emerald-200': img.type === 'do',
+                              'bg-rose-50 text-rose-700 border-rose-200': img.type === 'dont',
+                              'bg-slate-100 text-slate-700 border-slate-200': img.type === 'info'
+                            }"
+                            class="px-2 py-0.5 rounded-md text-[11px] font-medium border"
+                            x-text="pt"
+                          ></span>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </section>
+
+            <!-- =========================================================== -->
+            <!-- LAYER 3: DETAILED CALLOUT & STRUCTURED TABLE CONTENT        -->
+            <!-- =========================================================== -->
             <div
               x-show="currentTopic.callout"
               :class="{
@@ -766,38 +1028,80 @@
               x-html="highlightHtmlContent(currentTopic.contentHtml, activeHighlightTerm)"
             ></div>
 
-            <!-- Related Downloads & External Links Section -->
-            <div class="pt-6 border-t border-slate-200">
-              <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
-                <i data-lucide="folder-down" class="w-5 h-5 text-rmuti-600"></i>
-                <span>เอกสารดาวน์โหลด / ลิงก์ระบบที่เกี่ยวข้อง</span>
-              </h3>
+            <!-- =========================================================== -->
+            <!-- LAYER 4: OFFICIAL REGULATION & FORM ATTACHMENT BOX          -->
+            <!-- =========================================================== -->
+            <section class="rounded-2xl bg-navy-900 text-white p-5 sm:p-6 border border-slate-800 shadow-lg font-sans">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-rmuti-600 flex items-center justify-center shrink-0 shadow-md shadow-rmuti-600/30">
+                    <i data-lucide="scale" class="w-5 h-5 text-white"></i>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="text-sm sm:text-base font-bold text-white">เอกสารระเบียบข้อบังคับอ้างอิงและแบบฟอร์มราชการ</h3>
+                      <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full">
+                        อ้างอิงกฎหมาย 100%
+                      </span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                      เอกสารต้นฉบับจากสำนักส่งเสริมวิชาการและงานทะเบียน (ADEP) มทร.อีสาน
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Primary Official Regulation PDF Banner -->
+              <div
+                x-show="currentTopic.officialRegulation"
+                class="mb-4 p-4 rounded-xl bg-slate-800/90 border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
+                <div class="flex items-start gap-3 min-w-0">
+                  <span class="px-2.5 py-1 rounded-lg bg-rose-600 text-white font-bold text-xs shrink-0 mt-0.5">
+                    [PDF]
+                  </span>
+                  <div class="min-w-0">
+                    <div class="text-xs sm:text-sm font-bold text-white leading-snug" x-text="currentTopic.officialRegulation?.title"></div>
+                    <div class="text-[11px] text-slate-400 mt-0.5" x-text="currentTopic.officialRegulation?.clause"></div>
+                  </div>
+                </div>
+                <button
+                  @click="triggerDownloadToast({ title: currentTopic.officialRegulation?.title, subtitle: currentTopic.officialRegulation?.clause, type: 'pdf' })"
+                  type="button"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rmuti-600 hover:bg-rmuti-500 text-white text-xs font-bold transition shrink-0 self-start sm:self-center shadow-sm"
+                >
+                  <i data-lucide="file-text" class="w-4 h-4"></i>
+                  <span>ดูระเบียบฉบับเต็ม (PDF)</span>
+                </button>
+              </div>
+
+              <!-- Related Official Forms & System Links Grid -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <template x-for="doc in currentTopic.downloads" :key="doc.title">
                   <button
                     @click="triggerDownloadToast(doc)"
                     type="button"
-                    class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-rmuti-500 hover:bg-orange-50/40 transition text-left group"
+                    class="flex items-center justify-between p-3.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 hover:border-rmuti-500 transition text-left group"
                   >
                     <div class="flex items-center gap-3 min-w-0">
                       <div
-                        :class="doc.type === 'pdf' ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'"
-                        class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs uppercase"
-                        x-text="doc.type === 'pdf' ? 'PDF' : 'LINK'"
+                        :class="doc.type === 'pdf' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-blue-500/20 text-blue-300 border-blue-500/30'"
+                        class="w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 font-bold text-xs uppercase"
+                        x-text="doc.type === 'pdf' ? 'FORM' : 'LINK'"
                       ></div>
                       <div class="min-w-0">
-                        <div class="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-rmuti-600 truncate" x-text="doc.title"></div>
-                        <div class="text-[11px] text-slate-500 truncate" x-text="doc.subtitle"></div>
+                        <div class="text-xs sm:text-sm font-bold text-slate-100 group-hover:text-rmuti-400 truncate" x-text="doc.title"></div>
+                        <div class="text-[11px] text-slate-400 truncate" x-text="doc.subtitle"></div>
                       </div>
                     </div>
                     <i
                       :data-lucide="doc.type === 'pdf' ? 'download' : 'external-link'"
-                      class="w-4 h-4 text-slate-400 group-hover:text-rmuti-600 shrink-0 ml-2"
+                      class="w-4 h-4 text-slate-400 group-hover:text-rmuti-400 shrink-0 ml-2"
                     ></i>
                   </button>
                 </template>
               </div>
-            </div>
+            </section>
           </div>
 
         </article>
@@ -1061,6 +1365,96 @@
   </div>
 
   <!-- ===================================================================== -->
+  <!-- 6B. IMAGE LIGHTBOX MODAL (Zoomable Infographic & Do/Don't Viewer)     -->
+  <!-- ===================================================================== -->
+  <div
+    x-cloak
+    x-show="lightboxModalOpen && lightboxItem"
+    @keydown.window.escape="lightboxModalOpen = false"
+    class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+    role="dialog"
+    aria-modal="true"
+  >
+    <!-- Dark Backdrop -->
+    <div
+      x-show="lightboxModalOpen"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      @click="lightboxModalOpen = false"
+      class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm"
+    ></div>
+
+    <!-- Lightbox Content Card -->
+    <div
+      x-show="lightboxModalOpen"
+      x-transition:enter="transition ease-out duration-200 transform"
+      x-transition:enter-start="opacity-0 scale-95"
+      x-transition:enter-end="opacity-100 scale-100"
+      x-transition:leave="transition ease-in duration-150 transform"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-95"
+      class="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden z-10 border border-slate-700"
+    >
+      <!-- Top Bar -->
+      <div class="px-5 py-4 bg-navy-900 text-white flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span
+            x-show="lightboxItem"
+            :class="{
+              'bg-emerald-600 text-white': lightboxItem?.type === 'do',
+              'bg-rose-600 text-white': lightboxItem?.type === 'dont',
+              'bg-rmuti-600 text-white': lightboxItem?.type === 'info'
+            }"
+            class="px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0"
+            x-text="lightboxItem?.badge"
+          ></span>
+          <h3 class="font-bold text-sm sm:text-base truncate" x-text="lightboxItem?.title"></h3>
+        </div>
+        <button
+          @click="lightboxModalOpen = false"
+          type="button"
+          class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition shrink-0"
+          aria-label="ปิดภาพขยาย"
+        >
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Large Image Preview -->
+      <div class="bg-slate-950 flex items-center justify-center max-h-[60vh] overflow-hidden">
+        <img
+          :src="lightboxItem?.imageUrl"
+          :alt="lightboxItem?.title"
+          class="w-full max-h-[60vh] object-contain"
+        />
+      </div>
+
+      <!-- Detailed Caption & Checkpoints -->
+      <div class="p-5 sm:p-6 bg-white space-y-3">
+        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed" x-text="lightboxItem?.caption"></p>
+        <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+          <span class="text-xs font-bold text-slate-500">จุดสังเกตสำคัญ:</span>
+          <template x-for="(pt, idx) in (lightboxItem?.points || [])" :key="idx">
+            <span
+              :class="{
+                'bg-emerald-50 text-emerald-700 border-emerald-200': lightboxItem?.type === 'do',
+                'bg-rose-50 text-rose-700 border-rose-200': lightboxItem?.type === 'dont',
+                'bg-orange-50 text-rmuti-700 border-orange-200': lightboxItem?.type === 'info'
+              }"
+              class="px-2.5 py-1 rounded-lg text-xs font-semibold border"
+              x-text="pt"
+            ></span>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
   <!-- 7. TOAST NOTIFICATION (Feedback for Year Switch / Role / Downloads)   -->
   <!-- ===================================================================== -->
   <div
@@ -1098,6 +1492,8 @@
         mobileMenuOpen: false,
         onboardingModalOpen: false,
         ebookModalOpen: false,
+        lightboxModalOpen: false,
+        lightboxItem: null,
         openCategories: ['cat-1', 'cat-2', 'cat-3', 'cat-4'],
         toast: {
           visible: false,
@@ -1172,6 +1568,44 @@
                 readTime: '2 นาที',
                 summary: 'รู้จักมหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน (RMUTI) วิทยาเขตและศูนย์การศึกษา ปรัชญา อัตลักษณ์ “บัณฑิตนักปฏิบัติ” และหน่วยงานบริการวิชาการ ADEP',
                 keywords: ['ประวัติ มทร.อีสาน', 'บัณฑิตนักปฏิบัติ', 'สีประจำมหาวิทยาลัย', 'ADEP', 'สำนักส่งเสริมวิชาการและงานทะเบียน'],
+                keySummary: [
+                  { label: 'ใครควรรู้', icon: 'users', badgeColor: 'blue', text: 'นักศึกษาใหม่ทุกระดับการศึกษา (ปวช., ปวส., ป.ตรี, ป.โท, ป.เอก) ทั้ง 5 พื้นที่การศึกษา' },
+                  { label: 'อัตลักษณ์สำคัญ', icon: 'award', badgeColor: 'orange', text: '“บัณฑิตนักปฏิบัติ” เน้นทักษะปฏิบัติงานจริงควบคู่ทฤษฎี สีประจำมหาวิทยาลัยคือ “สีแสด”' },
+                  { label: 'จุดติดต่อทะเบียน', icon: 'map-pin', badgeColor: 'green', text: 'สำนักส่งเสริมวิชาการและงานทะเบียน (สวท./ADEP) อาคาร 35 ชั้น 2 ศูนย์กลางนครราชสีมา' }
+                ],
+                statusCards: {
+                  title: 'สรุป 3 เสาหลักอัตลักษณ์และบริการนักศึกษา มทร.อีสาน',
+                  subtitle: 'ข้อมูลพื้นฐานที่นักศึกษาใหม่ต้องทราบในการติดต่อราชการภายในมหาวิทยาลัย',
+                  items: [
+                    {
+                      color: 'green',
+                      badge: 'IDENTITY',
+                      icon: 'cpu',
+                      metric: 'บัณฑิตนักปฏิบัติ',
+                      title: 'Hands-on Technologist',
+                      desc: 'เน้นการเรียนปฏิบัติในห้องปฏิบัติการและโรงฝึกงานจริง พร้อมออกสหกิจศึกษา/ฝึกงานกับสถานประกอบการชั้นนำ',
+                      action: 'ครอบคลุมทุกระดับการศึกษา'
+                    },
+                    {
+                      color: 'yellow',
+                      badge: '5 CAMPUSES',
+                      icon: 'building-2',
+                      metric: '5 พื้นที่การศึกษา',
+                      title: 'เครือข่าย มทร.อีสาน',
+                      desc: 'ศูนย์กลางนครราชสีมา, วิทยาเขตขอนแก่น, วิทยาเขตสกลนคร, วิทยาเขตสุรินทร์ และโครงการจัดตั้งวิทยาเขตร้อยเอ็ด',
+                      action: 'ใช้ระเบียบการศึกษามาตรฐานเดียวกัน'
+                    },
+                    {
+                      color: 'red',
+                      badge: 'ONE-STOP ADEP',
+                      icon: 'landmark',
+                      metric: 'อาคาร 35 ชั้น 2',
+                      title: 'สำนักส่งเสริมวิชาการฯ (สวท.)',
+                      desc: 'ศูนย์กลางงานทะเบียน นับหน่วยกิต ใบคำร้อง วช. ขอใบรับรองผลการเรียน (Transcript) และสำเร็จการศึกษา',
+                      action: 'เปิดทำการ จันทร์–ศุกร์ 08:30–16:30 น.'
+                    }
+                  ]
+                },
                 callout: {
                   type: 'info',
                   title: 'อัตลักษณ์นักศึกษา มทร.อีสาน: “บัณฑิตนักปฏิบัติ”',
@@ -1210,8 +1644,12 @@
                     </table>
                   </div>
                 `,
+                officialRegulation: {
+                  title: '[PDF] พระราชบัญญัติมหาวิทยาลัยเทคโนโลยีราชมงคล พ.ศ. 2548 และประกาศอัตลักษณ์ มทร.อีสาน (ฉบับเต็ม)',
+                  clause: 'หมวดทั่วไป: โครงสร้างหน่วยงานและสำนักส่งเสริมวิชาการและงานทะเบียน (หน้า 1–14)'
+                },
                 downloads: [
-                  { title: 'แผนผังอาคารเรียนและหน่วยงาน มทร.อีสาน (Campus Map)', subtitle: 'ไฟล์ PDF ความละเอียดสูง สำหรับนักศึกษาใหม่', type: 'pdf' },
+                  { title: 'แผนผังอาคารเรียนและหน่วยงาน มทร.อีสาน (Campus Map)', subtitle: 'ไฟล์ PDF ความละเอียดสูง พิกัดอาคาร 35 ชั้น 2', type: 'pdf' },
                   { title: 'เว็บไซต์สำนักส่งเสริมวิชาการและงานทะเบียน (ADEP)', subtitle: 'adepservice.rmuti.ac.th', type: 'link' }
                 ]
               },
@@ -1223,6 +1661,41 @@
                 readTime: '3 นาที',
                 summary: 'กำหนดการเปิด-ปิดภาคการศึกษา วันลงทะเบียนเรียน วันชำระเงินค่าบำรุงการศึกษา ช่วงเพิ่ม-ถอนรายวิชา และกำหนดการสอบกลางภาค/ปลายภาค',
                 keywords: ['ปฏิทินการศึกษา', 'เปิดเทอม', 'วันลงทะเบียน', 'วันสอบ', 'ปิดเทอม', 'จ่ายค่าเทอม'],
+                keySummary: [
+                  { label: 'ใครต้องทำ', icon: 'users', badgeColor: 'blue', text: 'นักศึกษาทุกระดับชั้น ต้องตรวจสอบวันลงทะเบียนและวันชำระเงินทุกต้นเทอม' },
+                  { label: 'ทำเมื่อไหร่', icon: 'calendar-clock', badgeColor: 'orange', text: 'เทอม 1 เปิดมิถุนายน / เทอม 2 เปิดพฤศจิกายน (เพิ่ม-ถอนวิชาได้ใน 2 สัปดาห์แรก)' },
+                  { label: 'ข้อควรระวัง', icon: 'triangle-alert', badgeColor: 'red', text: 'ชำระค่าเทอมล่าช้ามีค่าปรับวันละ 50 บาท (สูงสุด 1,000 บาท) และอาจถูกตัดรายวิชา!' }
+                ],
+                visualStepper: {
+                  title: 'Timeline 4 ช่วงเวลาสำคัญในแต่ละภาคการศึกษา',
+                  subtitle: 'จำง่ายๆ 4 ช่วงหลักใน 1 เทอม (16 สัปดาห์) เพื่อไม่ให้พลาดกำหนดการสำคัญ',
+                  steps: [
+                    {
+                      icon: 'mouse-pointer-click',
+                      title: '1. ลงทะเบียน & ชำระเงิน',
+                      desc: 'เลือกวิชาเรียนในระบบ ESS พิมพ์ใบแจ้งหนี้และชำระผ่าน Mobile Banking',
+                      place: 'ระบบออนไลน์ ESS RMUTI'
+                    },
+                    {
+                      icon: 'refresh-cw',
+                      title: '2. เพิ่ม-ถอนวิชา (สัปดาห์ 1–2)',
+                      desc: 'เปลี่ยนกลุ่มเรียน เพิ่มหรือลดรายวิชาโดยไม่ติดสัญลักษณ์ W ในใบเกรด',
+                      place: 'ระบบ ESS / อาจารย์ที่ปรึกษา'
+                    },
+                    {
+                      icon: 'file-warning',
+                      title: '3. สอบกลางภาค & ถอนติด W',
+                      desc: 'สอบ Midterm สัปดาห์ที่ 8 และยื่นถอนรายวิชา (ติด W) ได้ไม่เกินสัปดาห์ที่ 12',
+                      place: 'งานทะเบียน อาคาร 35 ชั้น 2'
+                    },
+                    {
+                      icon: 'graduation-cap',
+                      title: '4. ประเมินอาจารย์ & สอบปลายภาค',
+                      desc: 'ทำแบบประเมินการสอนใน ESS ก่อนดูตารางสอบปลายภาค (สัปดาห์ที่ 16–17)',
+                      place: 'ระบบ ESS RMUTI'
+                    }
+                  ]
+                },
                 callout: {
                   type: 'warning',
                   title: 'ข้อควรระวังเรื่องกำหนดการลงทะเบียนและชำระเงิน',
@@ -1274,8 +1747,12 @@
                     </table>
                   </div>
                 `,
+                officialRegulation: {
+                  title: '[PDF] ประกาศมหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน เรื่อง ปฏิทินการศึกษา ประจำปีการศึกษา 2569 (ฉบับเต็ม)',
+                  clause: 'ครอบคลุมระดับ ปวช., ปวส., ปริญญาตรี และบัณฑิตศึกษา ลงนามโดยอธิการบดี มทร.อีสาน'
+                },
                 downloads: [
-                  { title: 'ประกาศปฏิทินการศึกษาฉบับเต็ม (PDF)', subtitle: 'สำนักส่งเสริมวิชาการและงานทะเบียน มทร.อีสาน', type: 'pdf' },
+                  { title: 'แบบคำร้องขอลงทะเบียนเรียนล่าช้า (แบบ วช.02)', subtitle: 'ยื่นพร้อมเหตุผลความจำเป็นที่ อาคาร 35 ชั้น 2', type: 'pdf' },
                   { title: 'ระบบบริการการศึกษา (ESS RMUTI)', subtitle: 'ess.rmuti.ac.th สำหรับตรวจสอบตารางเรียนและตารางสอบ', type: 'link' }
                 ]
               },
@@ -1287,6 +1764,41 @@
                 readTime: '3 นาที',
                 summary: 'การเปิดใช้งาน RMUTI Single Sign-On (RMUTI Wi-Fi & Google Workspace/Microsoft 365), สิทธิ์ประกันอุบัติเหตุห้องพยาบาล และกองทุนกู้ยืมเพื่อการศึกษา (กยศ.)',
                 keywords: ['Wi-Fi', 'อีเมลมหาวิทยาลัย', 'rmuti.ac.th', 'กยศ.', 'กู้ กยศ', 'ประกันอุบัติเหตุ', 'ห้องพยาบาล', 'สวัสดิการ'],
+                keySummary: [
+                  { label: 'ใครได้รับสิทธิ์', icon: 'users', badgeColor: 'blue', text: 'นักศึกษาปัจจุบันทุกระดับ ได้รับ Wi-Fi, อีเมล @rmuti.ac.th และประกันอุบัติเหตุ 24 ชม. ฟรี' },
+                  { label: 'ทำเมื่อไหร่', icon: 'calendar-clock', badgeColor: 'orange', text: 'เปิดใช้งานบัญชี IT ได้ตั้งแต่วันรายงานตัว / ยื่นกู้ กยศ. ตามประกาศกองพัฒนานักศึกษาต้นเทอม' },
+                  { label: 'ข้อควรระวัง', icon: 'triangle-alert', badgeColor: 'red', text: 'ผู้กู้ กยศ. ต้องสะสมชั่วโมงจิตอาสาอย่างน้อย 36 ชม./ปีการศึกษา และมี GPAX ไม่ต่ำกว่าเกณฑ์' }
+                ],
+                visualStepper: {
+                  title: 'ขั้นตอนการเปิดใช้งานบัญชี IT และยื่นขอสวัสดิการนักศึกษา',
+                  subtitle: 'ดำเนินการตาม 4 ขั้นตอนตั้งแต่เริ่มเข้าศึกษา',
+                  steps: [
+                    {
+                      icon: 'key-round',
+                      title: '1. เปิดบัญชี RMUTI Account',
+                      desc: 'ยืนยันตัวตนด้วยรหัสนักศึกษาและเลขบัตรประชาชนเพื่อรับรหัสผ่าน Wi-Fi & อีเมล',
+                      place: 'เว็บไซต์สำนักวิทยบริการฯ (ARIT)'
+                    },
+                    {
+                      icon: 'wifi',
+                      title: '2. เชื่อมต่อ @RMUTI-WiFi',
+                      desc: 'ล็อกอินใช้งานอินเทอร์เน็ตความเร็วสูงและ Microsoft 365 / Google Workspace ฟรี',
+                      place: 'ทุกอาคารเรียนทั่วมหาวิทยาลัย'
+                    },
+                    {
+                      icon: 'hand-coins',
+                      title: '3. ยื่นกู้ยืม กยศ. (ถ้ากู้)',
+                      desc: 'ลงทะเบียนในแอป กยศ. Connect และแนบสัญญาพร้อมบันทึกชั่วโมงจิตอาสา 36 ชม.',
+                      place: 'งานทุน กองพัฒนานักศึกษา'
+                    },
+                    {
+                      icon: 'heart-pulse',
+                      title: '4. เบิกประกันอุบัติเหตุ',
+                      desc: 'กรณีเกิดอุบัติเหตุ นำใบเสร็จค่ารักษาฉบับจริงและใบรับรองแพทย์มายื่นเบิกคืนได้',
+                      place: 'ห้องพยาบาล / กองพัฒนานักศึกษา'
+                    }
+                  ]
+                },
                 callout: {
                   type: 'success',
                   title: 'สิทธิ์ฟรีสำหรับนักศึกษาทุกระดับการศึกษา',
@@ -1312,9 +1824,13 @@
                     </div>
                   </div>
                 `,
+                officialRegulation: {
+                  title: '[PDF] ประกาศ มทร.อีสาน เรื่อง สวัสดิการประกันอุบัติเหตุและหลักเกณฑ์กองทุนกู้ยืมเพื่อการศึกษา (กยศ.) (ฉบับเต็ม)',
+                  clause: 'กองพัฒนานักศึกษา และสำนักวิทยบริการและเทคโนโลยีสารสนเทศ มทร.อีสาน'
+                },
                 downloads: [
                   { title: 'คู่มือการตั้งค่า RMUTI Wi-Fi และอีเมลนักศึกษา', subtitle: 'สำนักวิทยบริการและเทคโนโลยีสารสนเทศ (ARIT)', type: 'pdf' },
-                  { title: 'แบบฟอร์มเบิกสินไหมประกันอุบัติเหตุนักศึกษา', subtitle: 'กองพัฒนานักศึกษา มทร.อีสาน', type: 'pdf' }
+                  { title: 'แบบฟอร์มเบิกสินไหมประกันอุบัติเหตุนักศึกษา', subtitle: 'ยื่นที่งานสวัสดิการ กองพัฒนานักศึกษา', type: 'pdf' }
                 ]
               }
             ]
@@ -1332,13 +1848,48 @@
                 readTime: '4 นาที',
                 summary: 'ระเบียบจำนวนหน่วยกิตต่ำสุด-สูงสุดต่อภาคเรียน ขั้นตอนการเพิ่ม-ถอนรายวิชา (Drop / ติด W) และการยื่นคำร้องขอลาพักการศึกษา (ดรอปเรียนทั้งเทอม / รักษาสภาพ)',
                 keywords: ['ดรอปเรียน', 'ดรอป', 'ถอนวิชา', 'ติด W', 'รักษาสภาพ', 'ลาพักการศึกษา', 'เพิ่มถอน'],
+                keySummary: [
+                  { label: 'ใครต้องทำ', icon: 'users', badgeColor: 'blue', text: 'นักศึกษา ปวช., ปวส., ป.ตรี ที่ต้องการลดรายวิชา (ถอนติด W) หรือหยุดพักเรียนชั่วคราวทั้งเทอม' },
+                  { label: 'ทำเมื่อไหร่', icon: 'calendar-clock', badgeColor: 'orange', text: 'ถอนไม่ติด W: สัปดาห์ที่ 1–2 | ถอนติด W: สัปดาห์ที่ 3–12 | ลาพักทั้งเทอม: ก่อนสอบปลายภาค' },
+                  { label: 'ข้อควรระวัง', icon: 'triangle-alert', badgeColor: 'red', text: 'พ้นสัปดาห์ที่ 12 ห้ามถอนวิชาเด็ดขาด! และถ้าหยุดเรียนไปเฉยๆ โดยไม่ยื่น วช.10 จะถูกพ้นสภาพ!' }
+                ],
+                visualStepper: {
+                  title: 'Flowchart 4 ขั้นตอนการยื่นถอนรายวิชา (ติด W) / ลาพักการศึกษา',
+                  subtitle: 'ทำตามลำดับ 1 → 4 ให้เสร็จก่อนวันปิดรับคำร้องตามปฏิทินการศึกษา',
+                  steps: [
+                    {
+                      icon: 'file-pen-line',
+                      title: '1. กรอกคำร้อง วช.05 / วช.10',
+                      desc: 'ถอนรายวิชาใช้ใบคำร้อง วช.05 / ลาพักทั้งเทอมใช้ วช.10 (แนบหนังสือยินยอมผู้ปกครอง)',
+                      place: 'ดาวน์โหลดไฟล์ท้ายหน้านี้'
+                    },
+                    {
+                      icon: 'user-check',
+                      title: '2. อาจารย์ผู้สอน & ที่ปรึกษาลงนาม',
+                      desc: 'ให้อาจารย์ประจำวิชา อาจารย์ที่ปรึกษา และหัวหน้าสาขาวิชาลงนามเห็นชอบในคำร้อง',
+                      place: 'สาขาวิชา / คณะที่สังกัด'
+                    },
+                    {
+                      icon: 'receipt',
+                      title: '3. ชำระค่าธรรมเนียมคำร้อง',
+                      desc: 'ชำระค่าธรรมเนียมใบคำร้อง หรือค่ารักษาสภาพนักศึกษา (กรณีลาพักการศึกษาทั้งเทอม)',
+                      place: 'กองคลัง อาคาร 19 ชั้น 2'
+                    },
+                    {
+                      icon: 'building',
+                      title: '4. ยื่นงานทะเบียน อาคาร 35 ชั้น 2',
+                      desc: 'ส่งคำร้องฉบับจริงพร้อมใบเสร็จที่เคาน์เตอร์ทะเบียน และตรวจผลสัญลักษณ์ W ใน ESS',
+                      place: 'สวท. อาคาร 35 ชั้น 2'
+                    }
+                  ]
+                },
                 callout: {
                   type: 'warning',
                   title: 'เข้าใจคำว่า “ดรอป” ให้ถูกต้อง: ถอนรายวิชา (ติด W) vs ลาพักการศึกษา (พักทั้งเทอม)',
                   text: 'ภาษาพูดที่นักศึกษาเรียกว่า "ดรอปวิชา" คือการถอนรายวิชา (Withdrawal: ติด W) ซึ่งยังเรียนวิชาอื่นต่อตามปกติ ส่วน "ดรอปเรียนทั้งเทอม" คือการลาพักการศึกษา ซึ่งต้องชำระค่ารักษาสภาพนักศึกษา'
                 },
                 contentHtml: `
-                  <h2 class="text-lg font-bold text-slate-900 mb-2">1. เปรียบเทียบช่วงเวลาการถอนรายวิชา (Drop / Withdrawal)</h2>
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">ตารางเปรียบเทียบช่วงเวลาการถอนรายวิชา (Drop / Withdrawal)</h2>
                   <div class="overflow-x-auto my-3">
                     <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs sm:text-sm">
                       <thead class="bg-slate-100 text-slate-800">
@@ -1367,25 +1918,13 @@
                       </tbody>
                     </table>
                   </div>
-
-                  <h2 class="text-lg font-bold text-slate-900 mt-6 mb-3">2. ขั้นตอนการถอนรายวิชา (ติด W) และการลาพักการศึกษา (Step-by-Step)</h2>
-                  <ol class="space-y-3 text-xs sm:text-sm">
-                    <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-                      <span class="w-6 h-6 rounded-full bg-rmuti-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">1</span>
-                      <div><strong>ดาวน์โหลดคำร้อง:</strong> ใช้แบบคำร้องขอถอนรายวิชา (วช.05) หรือคำร้องขอลาพักการศึกษา (วช.10) จากระบบ ADEP</div>
-                    </li>
-                    <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-                      <span class="w-6 h-6 rounded-full bg-rmuti-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">2</span>
-                      <div><strong>ขอความเห็นชอบ:</strong> เสนออาจารย์ผู้สอนประจำวิชา อาจารย์ที่ปรึกษา และหัวหน้าสาขาวิชาลงนามเห็นชอบ (กรณีลาพักการศึกษาต้องมีคำรับรองจากผู้ปกครองแนบด้วย)</div>
-                    </li>
-                    <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-                      <span class="w-6 h-6 rounded-full bg-rmuti-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">3</span>
-                      <div><strong>ยื่นต่องานทะเบียนคณะ/สวท.:</strong> ยื่นเอกสารก่อนวันสุดท้ายที่กำหนดในปฏิทินการศึกษา พร้อมตรวจสอบสถานะในระบบ ESS</div>
-                    </li>
-                  </ol>
                 `,
+                officialRegulation: {
+                  title: '[PDF] ข้อบังคับ มทร.อีสาน ว่าด้วยการศึกษาระดับปริญญาตรี และประกาศนียบัตรวิชาชีพ พ.ศ. 2567 (ฉบับเต็ม)',
+                  clause: 'หมวดที่ 4 การลงทะเบียนรายวิชา การเพิ่ม-ถอนรายวิชา และการลาพักการศึกษา (ข้อ 18–27)'
+                },
                 downloads: [
-                  { title: 'แบบคำร้องขอเพิ่ม-ถอนรายวิชา ล่าช้า/ติด W (แบบ วช.05)', subtitle: 'ไฟล์ PDF สำหรับนักศึกษา ปวช. / ปวส. / ป.ตรี', type: 'pdf' },
+                  { title: 'แบบคำร้องขอเพิ่ม-ถอนรายวิชา ล่าช้า/ติด W (แบบ วช.05)', subtitle: 'ยื่นที่งานทะเบียน อาคาร 35 ชั้น 2 ภายในสัปดาห์ที่ 12', type: 'pdf' },
                   { title: 'แบบคำร้องขอลาพักการศึกษา / รักษาสภาพนักศึกษา (แบบ วช.10)', subtitle: 'ต้องมีลายเซ็นผู้ปกครองและอาจารย์ที่ปรึกษา', type: 'pdf' }
                 ]
               },
@@ -1397,6 +1936,41 @@
                 readTime: '4 นาที',
                 summary: 'เงื่อนไขการเทียบโอนรายวิชาสำหรับนักศึกษา ปวส. และ ป.ตรี (เด็กเทียบโอน) เกณฑ์ระดับคะแนนขั้นต่ำ (เกรด C หรือ 2.00) และจำนวนหน่วยกิตสูงสุดที่เทียบโอนได้',
                 keywords: ['เทียบโอน', 'เกรด C', 'เด็กเทียบโอน', 'ยกเว้นรายวิชา', 'ปวส. ต่อ ป.ตรี'],
+                keySummary: [
+                  { label: 'ใครต้องทำ', icon: 'users', badgeColor: 'blue', text: 'นักศึกษาใหม่หลักสูตรเทียบโอน (ปวส. ต่อ ป.ตรี) หรือผู้ย้ายสถาบัน/ย้ายสาขาวิชา' },
+                  { label: 'ทำเมื่อไหร่', icon: 'calendar-clock', badgeColor: 'orange', text: 'ต้องยื่นคำร้องขอเทียบโอนภายใน “ภาคการศึกษาแรก” ที่เข้าศึกษาใน มทร.อีสาน เท่านั้น' },
+                  { label: 'ข้อควรระวัง', icon: 'triangle-alert', badgeColor: 'red', text: 'วิชาที่นำมาเทียบโอนต้องได้เกรดไม่ต่ำกว่า C (2.00) และเนื้อหาตรงกันไม่น้อยกว่า 75%' }
+                ],
+                visualStepper: {
+                  title: 'Flowchart 4 ขั้นตอนการขอเทียบโอนผลการเรียน',
+                  subtitle: 'ดำเนินการครั้งเดียวในเทอมแรกที่เข้าศึกษา',
+                  steps: [
+                    {
+                      icon: 'files',
+                      title: '1. กรอกคำร้อง วช.08 & แนบใบเกรด',
+                      desc: 'เตรียมแบบคำร้อง วช.08 พร้อมใบ รบ./Transcript ฉบับจริง และคำอธิบายรายวิชาเดิม',
+                      place: 'เตรียมเอกสารที่สาขาวิชา'
+                    },
+                    {
+                      icon: 'clipboard-check',
+                      title: '2. กรรมการสาขาวิชาตรวจสอบ',
+                      desc: 'อาจารย์ที่ปรึกษาและคณะกรรมการประจำหลักสูตรตรวจสอบความตรงกันของเนื้อหา (≥75%)',
+                      place: 'สาขาวิชา / คณะที่สังกัด'
+                    },
+                    {
+                      icon: 'credit-card',
+                      title: '3. ชำระค่าธรรมเนียมเทียบโอน',
+                      desc: 'ชำระค่าธรรมเนียมการเทียบโอนรายวิชาตามจำนวนหน่วยกิตที่ได้รับอนุมัติ',
+                      place: 'กองคลัง อาคาร 19 ชั้น 2'
+                    },
+                    {
+                      icon: 'building',
+                      title: '4. ยื่นงานทะเบียน อาคาร 35 ชั้น 2',
+                      desc: 'ส่งคำร้องที่ผ่านการอนุมัติพร้อมใบเสร็จ เพื่อบันทึกผล CS/CE ลงในระบบทะเบียน',
+                      place: 'สวท. อาคาร 35 ชั้น 2'
+                    }
+                  ]
+                },
                 callout: {
                   type: 'info',
                   title: 'ยื่นเทียบโอนให้เสร็จสิ้นภายในภาคการศึกษาแรกที่เข้าศึกษา',
@@ -1411,8 +1985,12 @@
                     <li><strong>การบันทึกผลใน Transcript:</strong> รายวิชาที่ได้รับอนุมัติเทียบโอนจะบันทึกสัญลักษณ์ <strong>“CS” (Credits from Standardized Test/Transfer)</strong> หรือ <strong>“CE”</strong> โดยไม่นำมาคำนวณเกรดเฉลี่ยสะสม (GPAX)</li>
                   </ul>
                 `,
+                officialRegulation: {
+                  title: '[PDF] ระเบียบ มทร.อีสาน ว่าด้วยการเทียบโอนผลการเรียนระดับอนุปริญญาและปริญญาตรี พ.ศ. 2566 (ฉบับเต็ม)',
+                  clause: 'หมวดที่ 2 เกณฑ์การเทียบโอนรายวิชาและการคิดหน่วยกิตสะสม (หน้า 4–11)'
+                },
                 downloads: [
-                  { title: 'แบบคำร้องขอเทียบโอนผลการเรียน (แบบ วช.08)', subtitle: 'แนบพร้อมใบ รบ. / Transcript ฉบับจริง', type: 'pdf' },
+                  { title: 'แบบคำร้องขอเทียบโอนผลการเรียน (แบบ วช.08)', subtitle: 'แนบพร้อมใบ รบ. / Transcript ฉบับจริง ยื่นที่อาคาร 35 ชั้น 2', type: 'pdf' },
                   { title: 'ตารางอัตราค่าธรรมเนียมการเทียบโอนรายวิชา', subtitle: 'ระเบียบการเงิน มทร.อีสาน', type: 'pdf' }
                 ]
               },
@@ -1424,6 +2002,44 @@
                 readTime: '4 นาที',
                 summary: 'โครงสร้างหลักสูตรระดับบัณฑิตศึกษา (ป.โท แผน ก แบบ ก1/ก2 และแผน ข | ป.เอก แบบ 1.1/1.2 และ 2.1/2.2) การลงทะเบียนหน่วยกิตวิทยานิพนธ์ และการเปลี่ยนแผนการศึกษา',
                 keywords: ['แผน ก', 'แผน ข', 'หน่วยกิตป.โท', 'บัณฑิตศึกษา', 'ดุษฎีนิพนธ์', 'ค้นคว้าอิสระ', 'IS'],
+                keySummary: [
+                  { label: 'ใครต้องทำ', icon: 'users', badgeColor: 'blue', text: 'นักศึกษาระดับปริญญาโท (แผน ก / แผน ข) และปริญญาเอก (แบบ 1 / แบบ 2)' },
+                  { label: 'ทำเมื่อไหร่', icon: 'calendar-clock', badgeColor: 'orange', text: 'ลงทะเบียนทุกภาคเรียน (6–15 หน่วยกิต/เทอม) และเลือกแผนการศึกษาตั้งแต่แรกเข้า' },
+                  { label: 'ข้อควรระวัง', icon: 'triangle-alert', badgeColor: 'red', text: 'หากเก็บหน่วยกิตครบแล้วแต่ยังสอบเล่มไม่เสร็จ ต้องลงทะเบียน “รักษาสภาพ” ทุกเทอม!' }
+                ],
+                statusCards: {
+                  title: 'เปรียบเทียบโครงสร้างแผนการศึกษาระดับบัณฑิตศึกษา',
+                  subtitle: 'เลือกดูความแตกต่างของภาระงานวิจัยและรายวิชาเรียนได้ทันที',
+                  items: [
+                    {
+                      color: 'green',
+                      badge: 'ป.โท แผน ก (ก2)',
+                      icon: 'book-open-check',
+                      metric: 'เรียน 24 + วิจัย 12',
+                      title: 'วิทยานิพนธ์ (Thesis)',
+                      desc: 'ศึกษารายวิชาไม่น้อยกว่า 24 หน่วยกิต และทำวิทยานิพนธ์ 12 หน่วยกิต (แบบ ก1 ทำวิจัยล้วน 36 หน่วยกิต)',
+                      action: 'ต้องตีพิมพ์ TCI กลุ่ม 1 หรือ 2'
+                    },
+                    {
+                      color: 'yellow',
+                      badge: 'ป.โท แผน ข (IS)',
+                      icon: 'file-search',
+                      metric: 'เรียน 30 + IS 6',
+                      title: 'การค้นคว้าอิสระ (IS)',
+                      desc: 'ศึกษารายวิชาไม่น้อยกว่า 30 หน่วยกิต ทำรายงานค้นคว้าอิสระ 6 หน่วยกิต และต้องสอบประมวลความรู้ (CE)',
+                      action: 'เหมาะกับผู้เน้นประยุกต์ใช้งานจริง'
+                    },
+                    {
+                      color: 'red',
+                      badge: 'ป.เอก แบบ 1 & 2',
+                      icon: 'award',
+                      metric: 'วิจัย 36–72 หน่วยกิต',
+                      title: 'ดุษฎีนิพนธ์ (Dissertation)',
+                      desc: 'แบบ 1 เน้นวิจัยล้วน (48/72 หน่วยกิต) แบบ 2 เรียนรายวิชาควบคู่การทำดุษฎีนิพนธ์ และต้องสอบผ่าน QE',
+                      action: 'ต้องตีพิมพ์วารสารนานาชาติ Scopus/ISI'
+                    }
+                  ]
+                },
                 callout: {
                   type: 'info',
                   title: 'เกณฑ์จำนวนหน่วยกิตลงทะเบียนระดับบัณฑิตศึกษา',
@@ -1470,9 +2086,13 @@
                     </table>
                   </div>
                 `,
+                officialRegulation: {
+                  title: '[PDF] ข้อบังคับ มทร.อีสาน ว่าด้วยการศึกษาระดับบัณฑิตศึกษา พ.ศ. 2566 (ฉบับเต็ม)',
+                  clause: 'หมวดที่ 3 แผนการศึกษา การลงทะเบียนรายวิชา และการเปลี่ยนแผนการศึกษา (หน้า 8–19)'
+                },
                 downloads: [
-                  { title: 'ข้อบังคับ มทร.อีสาน ว่าด้วยการศึกษาระดับบัณฑิตศึกษา', subtitle: 'ฉบับสมบูรณ์ สำหรับนักศึกษา ป.โท และ ป.เอก', type: 'pdf' },
-                  { title: 'แบบคำร้องขอเปลี่ยนแผนการศึกษา (แบบ บศ.04)', subtitle: 'เปลี่ยนระหว่าง แผน ก และ แผน ข', type: 'pdf' }
+                  { title: 'แบบคำร้องขอเปลี่ยนแผนการศึกษา (แบบ บศ.04)', subtitle: 'ยื่นผ่านคณะต้นสังกัดและงานบัณฑิตศึกษา อาคาร 35 ชั้น 2', type: 'pdf' },
+                  { title: 'แบบคำร้องขอลงทะเบียนหน่วยกิตวิทยานิพนธ์ (แบบ บศ.02)', subtitle: 'สำหรับนักศึกษา ป.โท และ ป.เอก', type: 'pdf' }
                 ]
               }
             ]
@@ -1490,6 +2110,44 @@
                 readTime: '4 นาที',
                 summary: 'ระเบียบการเข้าเรียนขั้นต่ำร้อยละ 80 สำหรับนักศึกษา ปวช. และ ปวส. ความหมายของสัญลักษณ์ ขร. / มส. / มท. ขั้นตอนการยื่นคำร้องขอแก้ผลการเรียน และเกณฑ์การออกฝึกงาน',
                 keywords: ['ขาดเรียน', 'ติด ขร', 'ติด มส', 'ฝึกงาน', 'เกรดเฉลี่ย', 'เวลาเรียน 80%'],
+                keySummary: [
+                  { label: 'ใครต้องทำ', icon: 'users', badgeColor: 'blue', text: 'นักศึกษาระดับ ปวช. และ ปวส. ทุกคนต้องมีเวลาเข้าเรียนในแต่ละวิชาไม่ต่ำกว่า 80%' },
+                  { label: 'ทำเมื่อไหร่', icon: 'calendar-clock', badgeColor: 'orange', text: 'กรณีติด มท. (I) ต้องยื่นคำร้อง วช.06 และสอบ/ส่งงานแก้ให้เสร็จภายใน 30 วันแรกของเทอมถัดไป' },
+                  { label: 'ข้อควรระวัง', icon: 'triangle-alert', badgeColor: 'red', text: 'ขาดเรียนเกิน 20% ติด ขร./มส. ทันที (หมดสิทธิ์สอบปลายภาค ต้องลงทะเบียนเรียนซ้ำเท่านั้น)' }
+                ],
+                statusCards: {
+                  title: 'Visual Status Cards: เกณฑ์เวลาเรียนและสัญลักษณ์ผลการเรียน ปวช. / ปวส.',
+                  subtitle: 'เปรียบเทียบสถานะเวลาเรียนและผลกระทบต่อสิทธิ์การเข้าสอบปลายภาค',
+                  items: [
+                    {
+                      color: 'green',
+                      badge: 'สถานะปกติ (PASS)',
+                      icon: 'check-circle-2',
+                      metric: 'เวลาเรียน ≥ 80%',
+                      title: 'มีสิทธิ์เข้าสอบปลายภาค',
+                      desc: 'ขาดเรียนรวมกันไม่เกิน 20% ของเวลาเรียนทั้งหมด (เช่น วิชา 3 ชม./สัปดาห์ ขาดได้ไม่เกิน 9 ชม. ตลอดเทอม)',
+                      action: 'สะสม GPAX ≥ 2.00 เพื่อสำเร็จการศึกษา'
+                    },
+                    {
+                      color: 'yellow',
+                      badge: 'ต้องรีบแก้ไข (WARNING)',
+                      icon: 'clock',
+                      metric: 'ติด มท. / I',
+                      title: 'การวัดผลยังไม่สมบูรณ์',
+                      desc: 'ส่งชิ้นงานไม่ครบ หรือขาดสอบปลายภาคโดยมีเหตุสุดวิสัยที่ได้รับอนุมัติจากอาจารย์ผู้สอน',
+                      action: 'ยื่น วช.06 แก้ภายใน 30 วันแรกของเทอมถัดไป'
+                    },
+                    {
+                      color: 'red',
+                      badge: 'หมดสิทธิ์สอบ (DANGER)',
+                      icon: 'octagon-alert',
+                      metric: 'ติด ขร. / มส. (<80%)',
+                      title: 'เวลาเรียนไม่ถึงเกณฑ์ 80%',
+                      desc: 'ขาดเรียนเกิน 20% ไม่มีสิทธิ์เข้าสอบปลายภาคในรายวิชานั้น และไม่นำหน่วยกิตมาคำนวณ',
+                      action: 'ต้องลงทะเบียนเรียนซ้ำในรายวิชานั้นใหม่'
+                    }
+                  ]
+                },
                 callout: {
                   type: 'danger',
                   title: 'กฎเหล็ก ปวช. / ปวส.: เวลาเรียนต้องไม่ต่ำกว่า 80% ของเวลาเรียนทั้งหมด',
@@ -1528,8 +2186,12 @@
                     <li>ผ่านกิจกรรมหน้าเสาธงและกิจกรรมชมรมวิชาชีพตามเกณฑ์สถานศึกษา</li>
                   </ul>
                 `,
+                officialRegulation: {
+                  title: '[PDF] ระเบียบ มทร.อีสาน ว่าด้วยการจัดการศึกษาและการประเมินผลการเรียนระดับประกาศนียบัตรวิชาชีพ (ปวช./ปวส.) (ฉบับเต็ม)',
+                  clause: 'หมวดที่ 5 การประเมินผลการเรียน เวลาเรียนร้อยละ 80 และการฝึกงาน (หน้า 12–21)'
+                },
                 downloads: [
-                  { title: 'แบบคำร้องขอแก้ผลการเรียน มท. / I (แบบ วช.06)', subtitle: 'ยื่นภายใน 30 วันแรกของภาคการศึกษาถัดไป', type: 'pdf' },
+                  { title: 'แบบคำร้องขอแก้ผลการเรียน มท. / I (แบบ วช.06)', subtitle: 'ยื่นภายใน 30 วันแรกของภาคการศึกษาถัดไป อาคาร 35 ชั้น 2', type: 'pdf' },
                   { title: 'คู่มือการออกฝึกงานและสหกิจศึกษา ระดับ ปวช./ปวส.', subtitle: 'งานอาชีวศึกษา มทร.อีสาน', type: 'pdf' }
                 ]
               },
@@ -1541,6 +2203,44 @@
                 readTime: '5 นาที',
                 summary: 'ตารางเกณฑ์การวัดสภาพนักศึกษาปริญญาตรี สถานะปกติ (Normal) สถานะรอพินิจ (Probation / ติดโปร) และเงื่อนไขการพ้นสภาพนักศึกษา (Retire / รีไทร์) ที่นักศึกษาต้องระวัง',
                 keywords: ['เกรดเฉลี่ย', 'ติดโปร', 'รีไทร์', 'พ้นสภาพ', 'GPAX 2.00', 'โปรต่ำ', 'โปรสูง'],
+                keySummary: [
+                  { label: 'ใครต้องระวัง', icon: 'users', badgeColor: 'blue', text: 'นักศึกษาปริญญาตรีทุกคนที่เกรดเฉลี่ยสะสม (GPAX) ต่ำกว่า 2.00' },
+                  { label: 'ประเมินเมื่อไหร่', icon: 'calendar-clock', badgeColor: 'orange', text: 'คิดสภาพนักศึกษาเมื่อสิ้นภาคการศึกษาที่ 2 ของทุกปีการศึกษา (เกรดเทอม 1 ยังไม่รีไทร์ แต่เป็นสัญญาณเตือน)' },
+                  { label: 'ข้อควรระวังสูงสุด', icon: 'triangle-alert', badgeColor: 'red', text: 'สิ้นเทอม 2 หาก GPAX ต่ำกว่า 1.50 = รีไทร์ทันที! หรือติดโปร (1.50–1.99) ติดต่อกันเกินเกณฑ์ = รีไทร์!' }
+                ],
+                statusCards: {
+                  title: 'Visual Status Cards: เปรียบเทียบเกณฑ์ GPAX (เขียว / เหลือง / แดง)',
+                  subtitle: 'ตรวจสอบสถานะเกรดเฉลี่ยสะสม (GPAX) ของคุณได้ทันทีโดยไม่ต้องอ่านเรียงความ',
+                  items: [
+                    {
+                      color: 'green',
+                      badge: 'ปลอดภัย • สถานะปกติ',
+                      icon: 'shield-check',
+                      metric: 'GPAX ≥ 2.00',
+                      title: 'สถานะปกติ (Normal Status)',
+                      desc: 'ลงทะเบียนเรียนได้เต็มสิทธิ์ (ไม่เกิน 22 หน่วยกิต/เทอม) และมีสิทธิ์ยื่นขอสำเร็จการศึกษาเมื่อครบหน่วยกิต',
+                      action: 'GPAX ≥ 3.25 ลุ้นเกียรตินิยมอันดับ 2 / ≥ 3.50 อันดับ 1'
+                    },
+                    {
+                      color: 'yellow',
+                      badge: 'เฝ้าระวัง • ติดโปร (Probation)',
+                      icon: 'triangle-alert',
+                      metric: 'GPAX 1.50 – 1.99',
+                      title: 'สถานะรอพินิจ (โปรต่ำ / โปรสูง)',
+                      desc: '1.50–1.74 (โปรต่ำ) และ 1.75–1.99 (โปรสูง) ถูกจำกัดหน่วยกิตลงทะเบียนไม่เกิน 16 หน่วยกิต/เทอม',
+                      action: 'ต้องดึง GPAX ให้พ้นเกณฑ์ก่อนครบโควตาติดโปร'
+                    },
+                    {
+                      color: 'red',
+                      badge: 'อันตราย • พ้นสภาพ (Retire)',
+                      icon: 'flame',
+                      metric: 'GPAX < 1.50',
+                      title: 'พ้นสภาพนักศึกษา (รีไทร์)',
+                      desc: 'เมื่อสิ้นภาคเรียนที่ 2 หาก GPAX ต่ำกว่า 1.50 หรือติดโปรต่อเนื่องเกินจำนวนครั้งที่กำหนด จะพ้นสภาพทันที',
+                      action: 'ปรึกษาอาจารย์ที่ปรึกษาเพื่อวางแผนรีเกรด/ถอนติด W'
+                    }
+                  ]
+                },
                 callout: {
                   type: 'danger',
                   title: 'ระวัง! เกรดเฉลี่ยสะสม (GPAX) ต่ำกว่า 1.50 เมื่อสิ้นปีการศึกษา = พ้นสภาพ (รีไทร์) ทันที',
@@ -1588,8 +2288,12 @@
                     <li><strong>เกียรตินิยมอันดับ 2:</strong> GPAX ตลอดหลักสูตรตั้งแต่ <strong>3.25 – 3.49</strong> ไม่เคยได้เกรด F หรือ U และสำเร็จการศึกษาภายในเวลาที่หลักสูตรกำหนด</li>
                   </ul>
                 `,
+                officialRegulation: {
+                  title: '[PDF] ข้อบังคับ มทร.อีสาน ว่าด้วยการศึกษาระดับปริญญาตรี พ.ศ. 2567 (ฉบับเต็ม)',
+                  clause: 'หมวดที่ 6 การวัดและประเมินผลการศึกษา การจำแนกสภาพนักศึกษา และการพ้นสภาพ (ข้อ 32–45)'
+                },
                 downloads: [
-                  { title: 'ข้อบังคับ มทร.อีสาน ว่าด้วยการศึกษาระดับปริญญาตรี', subtitle: 'หมวดการวัดผล สถานะรอพินิจ และการพ้นสภาพนักศึกษา', type: 'pdf' },
+                  { title: 'แบบคำร้องขอลงทะเบียนเรียนซ้ำ / รีเกรด (แบบ วช.01)', subtitle: 'สำหรับนักศึกษาที่ต้องการดึงเกรดเฉลี่ยสะสม GPAX', type: 'pdf' },
                   { title: 'โปรแกรมคำนวณเกรดเฉลี่ยสะสม (GPAX Simulator)', subtitle: 'ระบบบริการการศึกษา ESS RMUTI', type: 'link' }
                 ]
               },
@@ -1601,42 +2305,81 @@
                 readTime: '5 นาที',
                 summary: 'ขั้นตอนการแต่งตั้งอาจารย์ที่ปรึกษาวิทยานิพนธ์ การสอบวัดคุณสมบัติ (Qualifying Examination: QE) เกณฑ์ภาษาอังกฤษ และเกณฑ์การตีพิมพ์ผลงานวิจัยในฐานข้อมูล TCI / Scopus เพื่อขอสำเร็จการศึกษา',
                 keywords: ['วิทยานิพนธ์', 'ตีพิมพ์', 'TCI', 'Scopus', 'สอบ QE', 'เกรดเฉลี่ย 3.00', 'ดุษฎีนิพนธ์'],
+                keySummary: [
+                  { label: 'ใครต้องทำ', icon: 'users', badgeColor: 'blue', text: 'นักศึกษา ป.โท และ ป.เอก ทุกคนต้องผ่านเกณฑ์ GPAX ≥ 3.00 และเกณฑ์ภาษาอังกฤษ' },
+                  { label: 'ทำเมื่อไหร่', icon: 'calendar-clock', badgeColor: 'orange', text: 'สอบ QE (ป.เอก) ก่อนสอบโครงร่างฯ และหลังอนุมัติโครงร่างฯ ต้องเว้นอย่างน้อย 60–90 วันจึงสอบจบได้' },
+                  { label: 'ข้อควรระวัง', icon: 'triangle-alert', badgeColor: 'red', text: 'ผลงานตีพิมพ์ต้องระบุชื่อ “มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน” เป็นสังกัดหลักของนักศึกษา!' }
+                ],
+                visualStepper: {
+                  title: 'Flowchart 4 ขั้นตอนหลักสู่การสำเร็จการศึกษา ป.โท / ป.เอก',
+                  subtitle: 'วางแผนดำเนินการตามลำดับเพื่อจบการศึกษาตามแผน',
+                  steps: [
+                    {
+                      icon: 'user-plus',
+                      title: '1. แต่งตั้งที่ปรึกษา & สอบ QE',
+                      desc: 'ยื่นแบบ บศ.01 แต่งตั้งอาจารย์ที่ปรึกษา และสอบวัดคุณสมบัติ (QE สำหรับ ป.เอก)',
+                      place: 'คณะต้นสังกัด'
+                    },
+                    {
+                      icon: 'file-spreadsheet',
+                      title: '2. สอบโครงร่างฯ & จริยธรรมวิจัย',
+                      desc: 'ยื่นสอบ Proposal (บศ.03) และขอรับรองจริยธรรมการวิจัยในมนุษย์ (กรณีเก็บข้อมูลในคน)',
+                      place: 'สถาบันวิจัยและพัฒนา / คณะ'
+                    },
+                    {
+                      icon: 'book-marked',
+                      title: '3. ตีพิมพ์ผลงาน TCI / Scopus',
+                      desc: 'ป.โท ตีพิมพ์ TCI กลุ่ม 1–2 หรือ Proceedings | ป.เอก ตีพิมพ์วารสารนานาชาติ Scopus/ISI',
+                      place: 'ฐานข้อมูลวารสารมาตรฐาน'
+                    },
+                    {
+                      icon: 'graduation-cap',
+                      title: '4. สอบป้องกันจบ & ส่งเล่มสมบูรณ์',
+                      desc: 'ตรวจ Turnitin อักขระวิสูจน์ สอบป้องกันจบ และส่งเล่มที่งานบัณฑิตศึกษา อาคาร 35 ชั้น 2',
+                      place: 'สวท. อาคาร 35 ชั้น 2'
+                    }
+                  ]
+                },
+                statusCards: {
+                  title: 'Visual Status Cards: 3 เงื่อนไขบังคับก่อนยื่นขอสำเร็จการศึกษา ป.โท / ป.เอก',
+                  subtitle: 'ต้องผ่านครบทั้ง 3 เกณฑ์สีเขียวจึงจะเสนอชื่อเข้าสภามหาวิทยาลัยเพื่ออนุมัติปริญญาได้',
+                  items: [
+                    {
+                      color: 'green',
+                      badge: 'เกณฑ์ผลการเรียน',
+                      icon: 'award',
+                      metric: 'GPAX ≥ 3.00',
+                      title: 'เกรดเฉลี่ยสะสมรายวิชา',
+                      desc: 'ศึกษารายวิชาครบตามโครงสร้างหลักสูตร โดยได้แต้มระดับคะแนนเฉลี่ยสะสมไม่ต่ำกว่า 3.00',
+                      action: 'หากต่ำกว่า 3.00 จะติดสถานะรอพินิจบัณฑิตศึกษา'
+                    },
+                    {
+                      color: 'yellow',
+                      badge: 'เกณฑ์ภาษาอังกฤษ & QE',
+                      icon: 'languages',
+                      metric: 'ผ่านเกณฑ์ภาษา + QE',
+                      title: 'ทักษะภาษาอังกฤษและสอบวัดคุณสมบัติ',
+                      desc: 'ผ่านเกณฑ์มาตรฐานภาษาอังกฤษ RMUTI-TEP / TOEFL / IELTS และสอบผ่าน QE / CE ตามแผน',
+                      action: 'ยื่นผลสอบที่งานบัณฑิตศึกษา อาคาร 35 ชั้น 2'
+                    },
+                    {
+                      color: 'red',
+                      badge: 'เกณฑ์ตีพิมพ์เผยแพร่',
+                      icon: 'globe',
+                      metric: 'TCI / Scopus',
+                      title: 'การตีพิมพ์ผลงานวิจัย',
+                      desc: 'ป.โท แผน ก ตีพิมพ์ TCI กลุ่ม 1–2 / ป.เอก ตีพิมพ์วารสารวิชาการนานาชาติ Scopus หรือ ISI',
+                      action: 'ต้องมีหนังสือตอบรับการตีพิมพ์ (Accepted) ฉบับจริง'
+                    }
+                  ]
+                },
                 callout: {
                   type: 'warning',
                   title: 'เงื่อนไขสำคัญก่อนยื่นขอสำเร็จการศึกษาระดับ ป.โท และ ป.เอก',
                   text: 'นักศึกษาบัณฑิตศึกษาต้องมี GPAX รายวิชาไม่ต่ำกว่า 3.00 ผ่านเกณฑ์มาตรฐานภาษาอังกฤษของมหาวิทยาลัย และมีผลงานตีพิมพ์เผยแพร่ที่ระบุสังกัด มทร.อีสาน ตามเกณฑ์ที่กำหนด'
                 },
                 contentHtml: `
-                  <h2 class="text-lg font-bold text-slate-900 mb-3">1. ขั้นตอนการทำวิทยานิพนธ์ / ดุษฎีนิพนธ์ (5 ขั้นตอนหลัก)</h2>
-                  <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5 my-3 text-xs">
-                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                      <div class="font-bold text-rmuti-600 mb-1">ขั้นที่ 1</div>
-                      <div class="font-bold text-slate-900">แต่งตั้งที่ปรึกษา</div>
-                      <p class="text-slate-500 mt-1">ยื่นแบบ บศ.01 แต่งตั้งอาจารย์ที่ปรึกษาหลัก</p>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                      <div class="font-bold text-rmuti-600 mb-1">ขั้นที่ 2</div>
-                      <div class="font-bold text-slate-900">สอบ QE (ป.เอก)</div>
-                      <p class="text-slate-500 mt-1">สอบวัดคุณสมบัติให้ผ่านก่อนสอบโครงร่างฯ</p>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                      <div class="font-bold text-rmuti-600 mb-1">ขั้นที่ 3</div>
-                      <div class="font-bold text-slate-900">สอบโครงร่างฯ</div>
-                      <p class="text-slate-500 mt-1">สอบ Proposal และขอรับรองจริยธรรมการวิจัยในมนุษย์ (ถ้ามี)</p>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                      <div class="font-bold text-rmuti-600 mb-1">ขั้นที่ 4</div>
-                      <div class="font-bold text-slate-900">สอบป้องกันจบ</div>
-                      <p class="text-slate-500 mt-1">หลังได้รับอนุมัติโครงร่างฯ ไม่น้อยกว่า 60–90 วัน</p>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                      <div class="font-bold text-rmuti-600 mb-1">ขั้นที่ 5</div>
-                      <div class="font-bold text-slate-900">ตีพิมพ์ & ส่งเล่ม</div>
-                      <p class="text-slate-500 mt-1">ตรวจอักขระวิสูจน์/Turnitin และส่งหลักฐานการตีพิมพ์</p>
-                    </div>
-                  </div>
-
-                  <h2 class="text-lg font-bold text-slate-900 mt-5 mb-2">2. ตารางสรุปเกณฑ์การตีพิมพ์เผยแพร่ผลงานเพื่อสำเร็จการศึกษา</h2>
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">ตารางสรุปเกณฑ์การตีพิมพ์เผยแพร่ผลงานเพื่อสำเร็จการศึกษา</h2>
                   <div class="overflow-x-auto my-3">
                     <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs sm:text-sm">
                       <thead class="bg-slate-100 text-slate-800">
@@ -1662,9 +2405,13 @@
                     </table>
                   </div>
                 `,
+                officialRegulation: {
+                  title: '[PDF] ประกาศ มทร.อีสาน เรื่อง เกณฑ์มาตรฐานหลักสูตรและการตีพิมพ์ผลงานเพื่อสำเร็จการศึกษาระดับบัณฑิตศึกษา พ.ศ. 2566 (ฉบับเต็ม)',
+                  clause: 'หมวดการสอบวัดคุณสมบัติ (QE) การสอบป้องกันวิทยานิพนธ์ และเกณฑ์การตีพิมพ์เผยแพร่ (หน้า 15–28)'
+                },
                 downloads: [
                   { title: 'คู่มือการพิมพ์วิทยานิพนธ์และดุษฎีนิพนธ์ มทร.อีสาน (Template)', subtitle: 'ไฟล์ PDF และรูปแบบมาตรฐาน Word/LaTeX', type: 'pdf' },
-                  { title: 'รวมแบบฟอร์มบัณฑิตศึกษา (บศ.01 – บศ.15)', subtitle: 'งานบัณฑิตศึกษา สำนักส่งเสริมวิชาการและงานทะเบียน', type: 'pdf' }
+                  { title: 'รวมแบบฟอร์มบัณฑิตศึกษา (บศ.01 – บศ.15)', subtitle: 'งานบัณฑิตศึกษา อาคาร 35 ชั้น 2 มทร.อีสาน', type: 'pdf' }
                 ]
               }
             ]
@@ -1682,6 +2429,68 @@
                 readTime: '3 นาที',
                 summary: 'มาตรฐานเครื่องแบบนักศึกษา ปวช. และ ปวส. ระเบียบการสวมเสื้อปฏิบัติการ (เสื้อช็อป) สีประจำสาขา ความปลอดภัยในโรงฝึกงาน/ห้องปฏิบัติการ และระเบียบทรงผม',
                 keywords: ['แต่งกาย', 'เสื้อช็อป', 'ทรงผม', 'โรงฝึกงาน', 'รองเท้าเซฟตี้', 'เครื่องแบบ ปวช'],
+                keySummary: [
+                  { label: 'ใครต้องปฏิบัติ', icon: 'users', badgeColor: 'blue', text: 'นักศึกษาระดับ ปวช. และ ปวส. ทุกสาขาวิชา ทั้งในการเรียนภาคทฤษฎีและภาคปฏิบัติ' },
+                  { label: 'ใส่เมื่อไหร่', icon: 'calendar-clock', badgeColor: 'orange', text: 'ชุดนักศึกษาปกติใส่เรียนวิชาทฤษฎีและวันสอบ | เสื้อช็อปใส่เฉพาะวันที่มีเรียนปฏิบัติการโรงฝึกงาน' },
+                  { label: 'ข้อควรระวัง', icon: 'triangle-alert', badgeColor: 'red', text: 'ห้ามดัดแปลงเสื้อช็อป ห้ามปักลวดลายนอกระเบียบ และห้ามใส่รองเท้าแตะเข้าโรงฝึกงานเด็ดขาด!' }
+                ],
+                visualGallery: {
+                  title: 'Image Gallery: เปรียบเทียบการแต่งกายชุดปฏิบัติการ/เสื้อช็อป (Do & Don\'t)',
+                  items: [
+                    {
+                      type: 'do',
+                      badge: 'DO • สิ่งที่ถูกต้องตามระเบียบ',
+                      title: 'ชุดปฏิบัติการโรงฝึกงาน (เสื้อช็อป) และชุดปกติที่ถูกต้อง',
+                      caption: 'สวมเสื้อช็อปสีประจำคณะ/สาขา ปักชื่อ-สกุล และรหัสนักศึกษาชัดเจน สวมทับเสื้อยืดขาวหรือเสื้อนักศึกษา กางเกงขายาวสีเข้มทรงสุภาพ และสวมรองเท้าเซฟตี้หรือรองเท้าหุ้มส้นเสมอ',
+                      points: ['ปักชื่อ-รหัสนักศึกษาถูกต้อง', 'ติดอาร์มตรามหาวิทยาลัยที่แขนเสื้อ', 'สวมรองเท้าเซฟตี้/หุ้มส้นมิดชิด', 'ทรงผมสุภาพไม่บดบังสายตาขณะใช้เครื่องจักร'],
+                      imageUrl: `data:image/svg+xml;utf8,${encodeURIComponent(`
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+                          <rect width="800" height="450" fill="#064E3B"/>
+                          <rect x="24" y="24" width="752" height="402" rx="20" fill="#065F46" stroke="#34D399" stroke-width="3"/>
+                          <circle cx="220" cy="225" r="130" fill="#10B981" opacity="0.2"/>
+                          <!-- Workshop Jacket Illustration -->
+                          <path d="M160 140 L200 115 L240 115 L280 140 L300 220 L270 230 L260 185 L260 315 L180 315 L180 185 L170 230 L140 220 Z" fill="#1E293B" stroke="#F8FAFC" stroke-width="4"/>
+                          <rect x="192" y="165" width="38" height="14" rx="3" fill="#EA580C"/>
+                          <circle cx="282" cy="175" r="10" fill="#F97316"/>
+                          <!-- Callout Lines -->
+                          <line x1="230" y1="172" x2="360" y2="135" stroke="#6EE7B7" stroke-width="3" stroke-dasharray="5,5"/>
+                          <line x1="282" y1="175" x2="360" y2="215" stroke="#6EE7B7" stroke-width="3" stroke-dasharray="5,5"/>
+                          <line x1="220" y1="315" x2="360" y2="295" stroke="#6EE7B7" stroke-width="3" stroke-dasharray="5,5"/>
+                          <!-- Labels -->
+                          <rect x="360" y="105" width="380" height="52" rx="10" fill="#047857"/>
+                          <text x="380" y="137" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✓ ป้ายชื่อ-รหัสนักศึกษา และกระเป๋าเสื้อถูกระเบียบ</text>
+                          <rect x="360" y="185" width="380" height="52" rx="10" fill="#047857"/>
+                          <text x="380" y="217" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✓ อาร์มตรามหาวิทยาลัย มทร.อีสาน ชัดเจน</text>
+                          <rect x="360" y="265" width="380" height="52" rx="10" fill="#047857"/>
+                          <text x="380" y="297" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✓ กางเกงขายาวสุภาพ + รองเท้าหุ้มส้น/Safety</text>
+                          <text x="400" y="385" text-anchor="middle" fill="#A7F3D0" font-family="sans-serif" font-size="16">มาตรฐานชุดปฏิบัติการโรงฝึกงาน ระดับ ปวช. และ ปวส. มทร.อีสาน</text>
+                        </svg>
+                      `)}`
+                    },
+                    {
+                      type: 'dont',
+                      badge: 'DON\'T • สิ่งที่ควรหลีกเลี่ยง (ผิดระเบียบ)',
+                      title: 'ข้อห้ามสำหรับการแต่งกายและชุดปฏิบัติการโรงฝึกงาน',
+                      caption: 'ห้ามสวมเสื้อช็อปที่ตัดเย็บดัดแปลงทรงหรือปักลวดลายกราฟิกเอง ห้ามสวมกางเกงยีนส์ขาด และห้ามสวมรองเท้าแตะเข้าห้องปฏิบัติการหรือโรงฝึกงานโดยเด็ดขาดเพราะเสี่ยงอันตรายจากเครื่องจักร',
+                      points: ['ห้ามปักลวดลาย/ข้อความนอกระเบียบ', 'ห้ามใส่รองเท้าแตะเข้าโรงฝึกงาน', 'ห้ามสวมกางเกงขาสั้นหรือยีนส์ขาด', 'ห้ามใส่เสื้อช็อปเข้าสอบปลายภาคทฤษฎี'],
+                      imageUrl: `data:image/svg+xml;utf8,${encodeURIComponent(`
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+                          <rect width="800" height="450" fill="#7F1D1D"/>
+                          <rect x="24" y="24" width="752" height="402" rx="20" fill="#991B1B" stroke="#F87171" stroke-width="3"/>
+                          <circle cx="210" cy="225" r="120" fill="#EF4444" opacity="0.2"/>
+                          <path d="M150 165 L270 285 M270 165 L150 285" stroke="#FCA5A5" stroke-width="16" stroke-linecap="round"/>
+                          <rect x="350" y="95" width="390" height="54" rx="10" fill="#B91C1C"/>
+                          <text x="370" y="128" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✗ ห้ามดัดแปลงเสื้อช็อป หรือปักลวดลายเอง</text>
+                          <rect x="350" y="175" width="390" height="54" rx="10" fill="#B91C1C"/>
+                          <text x="370" y="208" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✗ ห้ามสวมรองเท้าแตะเข้าโรงฝึกงานเด็ดขาด</text>
+                          <rect x="350" y="255" width="390" height="54" rx="10" fill="#B91C1C"/>
+                          <text x="370" y="288" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✗ ห้ามใส่เสื้อช็อปเข้าห้องสอบปลายภาคทฤษฎี</text>
+                          <text x="400" y="385" text-anchor="middle" fill="#FECACA" font-family="sans-serif" font-size="16">ฝ่าฝืนอาจถูกตัดสิทธิ์เข้าห้องปฏิบัติการหรือตัดคะแนนวินัยนักศึกษา</text>
+                        </svg>
+                      `)}`
+                    }
+                  ]
+                },
                 callout: {
                   type: 'warning',
                   title: 'ข้อบังคับความปลอดภัยเมื่อเข้าเรียนในโรงฝึกงานและห้องปฏิบัติการ',
@@ -1706,8 +2515,13 @@
                     </div>
                   </div>
                 `,
+                officialRegulation: {
+                  title: '[PDF] ระเบียบ มทร.อีสาน ว่าด้วยเครื่องแบบนักศึกษาและชุดปฏิบัติการโรงฝึกงาน ระดับ ปวช. และ ปวส. (ฉบับเต็ม)',
+                  clause: 'หมวดที่ 1–3 มาตรฐานเครื่องแบบปกติ ชุดฝึกงาน และวินัยความปลอดภัยในโรงฝึกงาน'
+                },
                 downloads: [
-                  { title: 'ระเบียบ มทร.อีสาน ว่าด้วยเครื่องแบบและชุดปฏิบัติการ ปวช./ปวส.', subtitle: 'พร้อมภาพตัวอย่างการติดเครื่องหมายที่ถูกต้อง', type: 'pdf' }
+                  { title: 'ผังสีเสื้อปฏิบัติการ (เสื้อช็อป) และตำแหน่งปักเครื่องหมาย', subtitle: 'เอกสารอ้างอิงมาตรฐานเครื่องแบบ ปวช./ปวส.', type: 'pdf' },
+                  { title: 'แบบคำร้องขออนุญาตแต่งกายกรณีพิเศษ (งานวินัยนักศึกษา)', subtitle: 'กองพัฒนานักศึกษา มทร.อีสาน', type: 'pdf' }
                 ]
               },
               {
@@ -1718,19 +2532,108 @@
                 readTime: '4 นาที',
                 summary: 'การแต่งกายชุดนักศึกษาปกติและชุดพิธีการ (เนกไท/เข็มกลัด/หัวเข็มขัด มทร.อีสาน) และเกณฑ์การสะสมชั่วโมงกิจกรรมนักศึกษา (Activity Transcript) เพื่อยื่นขอสำเร็จการศึกษา',
                 keywords: ['แต่งกาย', 'เข็มกลัด', 'เนกไท', 'ชั่วโมงกิจกรรม', 'กิจกรรมบังคับ', 'ชุดพิธีการ'],
+                keySummary: [
+                  { label: 'ใครต้องทำ', icon: 'users', badgeColor: 'blue', text: 'นักศึกษาปริญญาตรีทุกคน (ทั้งหลักสูตร 4 ปี และหลักสูตรเทียบโอน)' },
+                  { label: 'เกณฑ์ชั่วโมงกิจกรรม', icon: 'calendar-clock', badgeColor: 'orange', text: 'หลักสูตร 4 ปี ต้องสะสมรวม ≥ 100 ชม. | หลักสูตรเทียบโอน ต้องสะสมรวม ≥ 60 ชม. ตลอดหลักสูตร' },
+                  { label: 'ข้อควรระวัง', icon: 'triangle-alert', badgeColor: 'red', text: 'หากหน่วยกิตวิชาเรียนครบแต่ชั่วโมงกิจกรรมไม่ครบตามเกณฑ์ จะไม่สามารถยื่นขอสำเร็จการศึกษาได้!' }
+                ],
+                visualGallery: {
+                  title: 'Image Gallery: เครื่องแบบนักศึกษาปริญญาตรี มทร.อีสาน (Do & Don\'t)',
+                  items: [
+                    {
+                      type: 'do',
+                      badge: 'DO • ชุดนักศึกษาและชุดพิธีการที่ถูกต้อง',
+                      title: 'ตำแหน่งติดเข็มกลัด เนกไท และหัวเข็มขัดตรามหาวิทยาลัย',
+                      caption: 'นักศึกษาชายสวมเสื้อเชิ้ตขาวผูกเนกไทตรามหาวิทยาลัย กางเกงสแล็คสีดำ/กรมท่า นักศึกษาหญิงสวมเสื้อเชิ้ตขาวติดกระดุมโลหะและเข็มกลัดตรามหาวิทยาลัยที่อกซ้าย กระโปรงคลุมเข่าสุภาพ รองเท้าหุ้มส้นสีดำ',
+                      points: ['เข็มกลัดตรามหาวิทยาลัยที่อกซ้าย (นศ.หญิง)', 'เนกไทตรามหาวิทยาลัย + หัวเข็มขัด มทร.อีสาน', 'รองเท้าหนังหุ้มส้นสีดำสุภาพ', 'ใช้เข้าห้องสอบและงานพิธีการสำคัญ'],
+                      imageUrl: `data:image/svg+xml;utf8,${encodeURIComponent(`
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+                          <rect width="800" height="450" fill="#0F172A"/>
+                          <rect x="24" y="24" width="752" height="402" rx="20" fill="#1E293B" stroke="#EA580C" stroke-width="3"/>
+                          <!-- Shirt & Tie Illustration -->
+                          <path d="M150 130 L195 105 L245 105 L290 130 L305 210 L270 220 L265 175 L265 320 L175 320 L175 175 L170 220 L135 210 Z" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3"/>
+                          <!-- Tie -->
+                          <polygon points="212,120 228,120 234,245 220,265 206,245" fill="#EA580C"/>
+                          <!-- Pin Badge -->
+                          <circle cx="246" cy="168" r="11" fill="#F59E0B" stroke="#B45309" stroke-width="2"/>
+                          <!-- Belt -->
+                          <rect x="175" y="305" width="90" height="16" fill="#0F172A"/>
+                          <rect x="208" y="303" width="24" height="20" rx="3" fill="#F59E0B"/>
+                          <!-- Callout Labels -->
+                          <rect x="355" y="95" width="390" height="54" rx="10" fill="#047857"/>
+                          <text x="375" y="128" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✓ อกซ้าย: ติดเข็มกลัดตรามหาวิทยาลัย (นศ.หญิง)</text>
+                          <rect x="355" y="175" width="390" height="54" rx="10" fill="#EA580C"/>
+                          <text x="375" y="208" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✓ เนกไทตรามหาวิทยาลัย + เสื้อเชิ้ตขาวสุภาพ</text>
+                          <rect x="355" y="255" width="390" height="54" rx="10" fill="#047857"/>
+                          <text x="375" y="288" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✓ เข็มขัดหัวตรามหาวิทยาลัย + รองเท้าหุ้มส้นสีดำ</text>
+                          <text x="400" y="385" text-anchor="middle" fill="#FDBA74" font-family="sans-serif" font-size="16">เครื่องแบบมาตรฐานสำหรับเข้าเรียนภาคทฤษฎี เข้าห้องสอบ และงานพิธีการ</text>
+                        </svg>
+                      `)}`
+                    },
+                    {
+                      type: 'dont',
+                      badge: 'DON\'T • สิ่งที่ควรหลีกเลี่ยงในการเข้าสอบ/ติดต่อราชการ',
+                      title: 'การแต่งกายผิดระเบียบที่ห้ามใช้เข้าห้องสอบปลายภาค',
+                      caption: 'หลีกเลี่ยงการสวมเสื้อยืดคอกลม กางเกงขาสั้น กระโปรงสั้นเกินเกณฑ์ หรือรองเท้าแตะในการเข้าห้องสอบกลางภาค/ปลายภาค และการติดต่อราชการที่อาคาร 35',
+                      points: ['ห้ามสวมรองเท้าแตะเข้าห้องสอบ', 'ห้ามสวมเสื้อยืดไม่มีปกหรือกางเกงขาสั้น', 'ห้ามใช้กระดุมหรือเข็มขัดผิดระเบียบในชุดพิธีการ', 'กรรมการคุมสอบมีสิทธิ์ไม่อนุญาตให้เข้าห้องสอบ'],
+                      imageUrl: `data:image/svg+xml;utf8,${encodeURIComponent(`
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+                          <rect width="800" height="450" fill="#450A0A"/>
+                          <rect x="24" y="24" width="752" height="402" rx="20" fill="#7F1D1D" stroke="#F87171" stroke-width="3"/>
+                          <circle cx="205" cy="225" r="115" fill="#EF4444" opacity="0.2"/>
+                          <path d="M150 170 L260 280 M260 170 L150 280" stroke="#FCA5A5" stroke-width="16" stroke-linecap="round"/>
+                          <rect x="350" y="95" width="395" height="54" rx="10" fill="#B91C1C"/>
+                          <text x="370" y="128" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✗ ห้ามใส่รองเท้าแตะเข้าห้องสอบและติดต่อราชการ</text>
+                          <rect x="350" y="175" width="395" height="54" rx="10" fill="#B91C1C"/>
+                          <text x="370" y="208" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✗ ห้ามสวมเสื้อยืดคอกลม/กางเกงยีนส์ขาดเข้าสอบ</text>
+                          <rect x="350" y="255" width="395" height="54" rx="10" fill="#B91C1C"/>
+                          <text x="370" y="288" fill="#FFFFFF" font-family="sans-serif" font-size="18" font-weight="bold">✗ ระวัง! ลืมเก็บชั่วโมงกิจกรรมบังคับทำให้อนุมัติจบไม่ได้</text>
+                          <text x="400" y="385" text-anchor="middle" fill="#FECACA" font-family="sans-serif" font-size="16">โปรดแต่งกายชุดนักศึกษาถูกระเบียบทุกครั้งในการเข้าห้องสอบและงานพิธีการ</text>
+                        </svg>
+                      `)}`
+                    }
+                  ]
+                },
+                statusCards: {
+                  title: 'Visual Status Cards: โครงสร้างชั่วโมงกิจกรรมนักศึกษา (Activity Transcript)',
+                  subtitle: 'สะสมให้ครบทั้ง 3 หมวดกิจกรรม (รวม ≥ 100 ชั่วโมง สำหรับหลักสูตร 4 ปี / ≥ 60 ชั่วโมง สำหรับเทียบโอน)',
+                  items: [
+                    {
+                      color: 'green',
+                      badge: 'หมวดที่ 1 • บังคับส่วนกลาง',
+                      icon: 'flag',
+                      metric: '≥ 30 ชั่วโมง',
+                      title: 'กิจกรรมบังคับมหาวิทยาลัย',
+                      desc: 'เช่น ปฐมนิเทศนักศึกษาใหม่ พิธีไหว้ครู และกิจกรรมวันสำคัญของมหาวิทยาลัย (นักศึกษาเทียบโอน ≥ 18 ชั่วโมง)',
+                      action: 'จัดโดยกองพัฒนานักศึกษา มทร.อีสาน'
+                    },
+                    {
+                      color: 'yellow',
+                      badge: 'หมวดที่ 2 • บังคับเลือกคณะ',
+                      icon: 'users',
+                      metric: '≥ 30 ชั่วโมง',
+                      title: 'กิจกรรมของคณะ/สาขาวิชา',
+                      desc: 'กิจกรรมวิชาการ กีฬาเชื่อมความสัมพันธ์ และทำนุบำรุงศิลปวัฒนธรรมที่คณะจัดขึ้น (เทียบโอน ≥ 18 ชั่วโมง)',
+                      action: 'ติดตามประกาศจากสโมสรนักศึกษาคณะ'
+                    },
+                    {
+                      color: 'red',
+                      badge: 'หมวดที่ 3 • เลือกเสรี/จิตอาสา',
+                      icon: 'heart-handshake',
+                      metric: '≥ 40 ชั่วโมง',
+                      title: 'ชมรม & จิตอาสาพัฒนาทักษะ',
+                      desc: 'กิจกรรมชมรมนักศึกษา จิตอาสาบำเพ็ญประโยชน์ และพัฒนาทักษะตามคุณลักษณะบัณฑิต TQF 5 ด้าน (เทียบโอน ≥ 24 ชั่วโมง)',
+                      action: 'ตรวจสอบผลในระบบ act.rmuti.ac.th'
+                    }
+                  ]
+                },
                 callout: {
                   type: 'info',
                   title: 'ต้องผ่านเกณฑ์ชั่วโมงกิจกรรมนักศึกษา จึงจะยื่นขอสำเร็จการศึกษาได้',
                   text: 'นักศึกษาปริญญาตรีต้องเข้าร่วมกิจกรรมเสริมหลักสูตรและสะสมหน่วยชั่วโมงกิจกรรมให้ครบตามเกณฑ์ของกองพัฒนานักศึกษา (ไม่น้อยกว่า 100 ชั่วโมง ตลอดหลักสูตร แบ่งเป็นกิจกรรมบังคับและกิจกรรมเลือก)'
                 },
                 contentHtml: `
-                  <h2 class="text-lg font-bold text-slate-900 mb-2">1. เครื่องแบบนักศึกษาปกติและชุดพิธีการ (ระดับปริญญาตรี)</h2>
-                  <ul class="list-disc pl-5 space-y-2 text-xs sm:text-sm">
-                    <li><strong>นักศึกษาชาย:</strong> เสื้อเชิ้ตสีขาวแขนยาว ผูกเนกไทสีแสด/สีกรมท่าที่มีตรามหาวิทยาลัย กางเกงขายาวสีดำหรือสีกรมท่าเข้ม เข็มขัดหนังสีดำหัวเข็มขัดตรามหาวิทยาลัย รองเท้าหนังหุ้มส้นสีดำ</li>
-                    <li><strong>นักศึกษาหญิง:</strong> เสื้อเชิ้ตสีขาวแขนสั้น ติดกระดุมโลหะตรามหาวิทยาลัยและเข็มกลัดตรามหาวิทยาลัยที่อกด้านซ้าย กระโปรงสีดำหรือสีกรมท่าเข้ม เข็มขัดหนังหัวตรามหาวิทยาลัย รองเท้าหุ้มส้นสีดำ</li>
-                  </ul>
-
-                  <h2 class="text-lg font-bold text-slate-900 mt-5 mb-2">2. โครงสร้างเกณฑ์ชั่วโมงกิจกรรมนักศึกษา (Activity Transcript)</h2>
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">ตารางสรุปเกณฑ์ชั่วโมงกิจกรรมนักศึกษา (Activity Transcript)</h2>
                   <div class="overflow-x-auto my-3">
                     <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs sm:text-sm">
                       <thead class="bg-slate-100 text-slate-800">
@@ -1760,8 +2663,12 @@
                     </table>
                   </div>
                 `,
+                officialRegulation: {
+                  title: '[PDF] ข้อบังคับ มทร.อีสาน ว่าด้วยเครื่องแบบนักศึกษา และการเข้าร่วมกิจกรรมนักศึกษา พ.ศ. 2566 (ฉบับเต็ม)',
+                  clause: 'หมวดเครื่องแบบปกติ ชุดพิธีการ และเกณฑ์การผ่านกิจกรรมเสริมหลักสูตรเพื่อสำเร็จการศึกษา'
+                },
                 downloads: [
-                  { title: 'ประกาศ มทร.อีสาน เรื่องเกณฑ์การเข้าร่วมกิจกรรมนักศึกษา', subtitle: 'กองพัฒนานักศึกษา มทร.อีสาน', type: 'pdf' },
+                  { title: 'ประกาศ มทร.อีสาน เรื่องเกณฑ์การเข้าร่วมกิจกรรมนักศึกษา (ฉบับเต็ม)', subtitle: 'กองพัฒนานักศึกษา มทร.อีสาน', type: 'pdf' },
                   { title: 'ระบบตรวจสอบชั่วโมงกิจกรรมนักศึกษาออนไลน์ (Activity Transcript)', subtitle: 'act.rmuti.ac.th', type: 'link' }
                 ]
               }
@@ -1791,6 +2698,13 @@
           this.$watch('mobileMenuOpen', () => this.refreshIcons());
           this.$watch('onboardingModalOpen', () => this.refreshIcons());
           this.$watch('ebookModalOpen', () => this.refreshIcons());
+          this.$watch('lightboxModalOpen', () => this.refreshIcons());
+        },
+
+        openLightbox(imgItem) {
+          this.lightboxItem = imgItem;
+          this.lightboxModalOpen = true;
+          this.refreshIcons();
         },
 
         refreshIcons() {
@@ -1888,7 +2802,29 @@
             const inCallout = topic.callout
               ? (topic.callout.title + ' ' + topic.callout.text).toLowerCase().includes(q)
               : false;
-            return inTitle || inSummary || inKeywords || inContent || inCallout;
+            const inKeySummary = (topic.keySummary || []).some(
+              k => (k.label + ' ' + k.text).toLowerCase().includes(q)
+            );
+            const inStepper = (topic.visualStepper?.steps || []).some(
+              s => (s.title + ' ' + s.desc + ' ' + s.place).toLowerCase().includes(q)
+            );
+            const inStatusCards = (topic.statusCards?.items || []).some(
+              c => (c.metric + ' ' + c.title + ' ' + c.desc).toLowerCase().includes(q)
+            );
+            const inRegulation = topic.officialRegulation
+              ? (topic.officialRegulation.title + ' ' + topic.officialRegulation.clause).toLowerCase().includes(q)
+              : false;
+            return (
+              inTitle ||
+              inSummary ||
+              inKeywords ||
+              inContent ||
+              inCallout ||
+              inKeySummary ||
+              inStepper ||
+              inStatusCards ||
+              inRegulation
+            );
           });
         },
 
