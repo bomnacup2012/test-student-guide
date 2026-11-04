@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>คู่มือนักศึกษาออนไลน์อัจฉริยะ (RMUTI Smart Student Guide) | ADEP มทร.อีสาน</title>
+
+  <!-- Google Fonts: Prompt & Sarabun -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Prompt', 'sans-serif'],
+            body: ['Sarabun', 'Prompt', 'sans-serif'],
+          },
+          colors: {
+            rmuti: {
+              50: '#FFF7ED',
+              100: '#FFEDD5',
+              200: '#FED7AA',
+              300: '#FDBA74',
+              400: '#FB923C',
+              500: '#F97316',
+              600: '#EA580C',
+              700: '#C2410C',
+              800: '#9A3412',
+              900: '#7C2D12',
+            },
+            navy: {
+              800: '#1E293B',
+              900: '#0F172A',
+              950: '#020617',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Alpine.js CDN -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <style>
+    [x-cloak] { display: none !important; }
+    body {
+      font-family: 'Prompt', sans-serif;
+      background-color: #F8FAFC;
+      color: #0F172A;
+    }
+    .content-prose {
+      font-family: 'Sarabun', 'Prompt', sans-serif;
+      line-height: 1.8;
+    }
+    .content-prose h1, .content-prose h2, .content-prose h3, .content-prose h4 {
+      font-family: 'Prompt', sans-serif;
+    }
+    mark.search-highlight {
+      background-color: #FEF08A;
+      color: #854D0E;
+      padding: 0 4px;
+      border-radius: 4px;
+      font-weight: 600;
+      box-shadow: 0 0 0 1px #FDE047;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+
+<body
+  x-data="studentGuideApp()"
+  x-init="initApp()"
+  @keydown.window.ctrl.k.prevent="$refs.searchInput.focus()"
+  @keydown.window.slash.prevent="if ($event.target.tagName !== 'INPUT') $refs.searchInput.focus()"
+  class="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-800 antialiased selection:bg-rmuti-500 selection:text-white"
+>
+
+  <!-- ===================================================================== -->
+  <!-- 1. TOP NAVIGATION BAR (Sticky Header)                                 -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-40 bg-navy-900 text-white shadow-lg border-b border-slate-800">
+    <div class="max-w-[1440px] mx-auto px-3 sm:px-6">
+      <div class="flex items-center justify-between h-16 gap-2 sm:gap-4">
+
+        <!-- Left: Mobile Hamburger + Logo & Brand + Academic Year Selector -->
+        <div class="flex items-center gap-2.5 sm:gap-4 min-w-0">
+          <!-- Hamburger Menu Button (Mobile View) -->
+          <button
+            @click="mobileMenuOpen = true"
+            type="button"
+            class="lg:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-rmuti-500 transition"
+            aria-label="เปิดสารบัญ"
+          >
+            <i data-lucide="menu" class="w-6 h-6"></i>
+          </button>
+
+          <!-- Brand Logo -->
+          <a
+            href="#"
+            @click.prevent="clearSearch(); selectFirstAvailableTopic()"
+            class="flex items-center gap-2.5 group focus:outline-none"
+          >
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rmuti-500 to-rmuti-700 flex items-center justify-center shadow-md shadow-rmuti-600/30 border border-rmuti-400/30 shrink-0 group-hover:scale-105 transition">
+              <i data-lucide="book-open-check" class="w-5 h-5 text-white"></i>
+            </div>
+            <div class="leading-tight truncate">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-sm sm:text-base tracking-tight text-white">คู่มือนักศึกษาออนไลน์</span>
+                <span class="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold bg-rmuti-600 text-white rounded uppercase tracking-wider">ADEP</span>
+              </div>
+              <p class="text-[11px] text-slate-400 truncate hidden md:block">สำนักส่งเสริมวิชาการและงานทะเบียน มทร.อีสาน</p>
+            </div>
+          </a>
+
+          <!-- Academic Year Selector (Dropdown) -->
+          <div class="relative hidden sm:block ml-1">
+            <label for="academic-year-select" class="sr-only">เลือกปีการศึกษา</label>
+            <div class="flex items-center bg-slate-800/90 hover:bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-200 transition">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-rmuti-400 mr-1.5 shrink-0"></i>
+              <select
+                id="academic-year-select"
+                x-model="academicYear"
+                @change="onYearChange()"
+                class="bg-transparent text-white font-medium focus:outline-none cursor-pointer pr-1"
+              >
+                <option value="2569" class="bg-navy-900 text-white">ปีการศึกษา 2569 (ล่าสุด)</option>
+                <option value="2568" class="bg-navy-900 text-white">ปีการศึกษา 2568</option>
+                <option value="2567" class="bg-navy-900 text-white">ปีการศึกษา 2567</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center: Scoped Instant Search Bar (Desktop & Tablet) -->
+        <div class="flex-1 max-w-xl mx-2 hidden md:block">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </div>
+            <input
+              x-ref="searchInput"
+              x-model="searchQuery"
+              @input="onSearchInput()"
+              type="text"
+              :placeholder="'ค้นหาในระดับ ' + currentLevelObj.shortName + ' เช่น ดรอป, ติดโปร, รีไทร์, เสื้อช็อป... (Ctrl+K)'"
+              class="w-full pl-10 pr-20 py-2 bg-slate-800/90 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rmuti-500 focus:border-rmuti-500 focus:bg-slate-800 transition"
+            />
+            <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center gap-1">
+              <button
+                x-show="searchQuery.trim().length > 0"
+                @click="clearSearch()"
+                type="button"
+                class="text-xs text-slate-400 hover:text-white px-1.5 py-0.5 rounded bg-slate-700/70 hover:bg-slate-700 transition"
+                title="ล้างคำค้นหา"
+              >
+                ล้าง
+              </button>
+              <kbd
+                x-show="searchQuery.trim().length === 0"
+                class="hidden lg:inline-block px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-900/80 border border-slate-700 rounded"
+              >
+                Ctrl+K
+              </kbd>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Active Role Switcher & Hybrid E-Book Mode Button -->
+        <div class="flex items-center gap-2 shrink-0">
+          <!-- Active Role Switcher Button -->
+          <button
+            @click="onboardingModalOpen = true"
+            type="button"
+            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-rmuti-600/20 hover:bg-rmuti-600/30 text-rmuti-300 border border-rmuti-500/40 transition shadow-sm group"
+            title="คลิกเพื่อเปลี่ยนระดับการศึกษา"
+          >
+            <span class="w-2 h-2 rounded-full bg-rmuti-500 animate-pulse"></span>
+            <span class="text-slate-300 hidden xl:inline">ระดับ:</span>
+            <span class="font-semibold text-white" x-text="currentLevelObj.shortName"></span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-rmuti-400 group-hover:translate-y-0.5 transition"></i>
+          </button>
+
+          <!-- Hybrid Mode Button: E-Book / PDF -->
+          <button
+            @click="ebookModalOpen = true"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+            title="เปิดแบบรูปเล่ม E-Book 3D Flipbook หรือดาวน์โหลด PDF"
+          >
+            <i data-lucide="book-open" class="w-4 h-4 text-rmuti-400 shrink-0"></i>
+            <span class="hidden lg:inline">เปิดแบบรูปเล่ม E-Book / ดาวน์โหลด PDF</span>
+            <span class="lg:hidden">E-Book / PDF</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Mobile Search & Year Bar + Quick Search Tags Bar -->
+      <div class="pb-2.5 pt-1 border-t border-slate-800/80 flex flex-col gap-2">
+        <!-- Mobile Search Input + Year Selector -->
+        <div class="flex md:hidden items-center gap-2">
+          <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </div>
+            <input
+              x-model="searchQuery"
+              @input="onSearchInput()"
+              type="text"
+              :placeholder="'ค้นหา (' + currentLevelObj.shortName + ') เช่น ดรอป, ติดโปร, เสื้อช็อป...'"
+              class="w-full pl-9 pr-14 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rmuti-500"
+            />
+            <button
+              x-show="searchQuery.trim().length > 0"
+              @click="clearSearch()"
+              type="button"
+              class="absolute inset-y-0 right-2 my-auto h-5 px-1.5 text-[10px] bg-slate-700 text-slate-200 rounded"
+            >
+              ล้าง
+            </button>
+          </div>
+          <!-- Mobile Year Selector -->
+          <select
+            x-model="academicYear"
+            @change="onYearChange()"
+            aria-label="เลือกปีการศึกษา"
+            class="sm:hidden bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-rmuti-500"
+          >
+            <option value="2569">ปี 2569</option>
+            <option value="2568">ปี 2568</option>
+            <option value="2567">ปี 2567</option>
+          </select>
+        </div>
+
+        <!-- Quick Search Tags (คำค้นหายอดฮิต) -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 text-xs">
+          <span class="text-slate-400 flex items-center gap-1 shrink-0 text-[11px] font-medium">
+            <i data-lucide="sparkles" class="w-3 h-3 text-rmuti-400"></i>
+            คำค้นหายอดฮิต:
+          </span>
+          <template x-for="tag in quickSearchTags" :key="tag.keyword">
+            <button
+              @click="triggerQuickSearch(tag.keyword)"
+              type="button"
+              :class="searchQuery === tag.keyword
+                ? 'bg-rmuti-600 text-white border-rmuti-500'
+                : 'bg-slate-800/90 hover:bg-slate-700/80 text-slate-300 border-slate-700/80'"
+              class="px-2.5 py-0.5 rounded-full border text-[11px] font-medium transition shrink-0 flex items-center gap-1"
+            >
+              <span x-text="tag.label"></span>
+            </button>
+          </template>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- 2. MAIN PORTAL LAYOUT (Left Sidebar + Main Content Area)              -->
+  <!-- ===================================================================== -->
+  <div class="flex-1 max-w-[1440px] w-full mx-auto flex relative">
+
+    <!-- ------------------------------------------------------------------- -->
+    <!-- 3A. MOBILE SLIDE-OVER DRAWER (Hamburger Menu)                       -->
+    <!-- ------------------------------------------------------------------- -->
+    <div
+      x-cloak
+      x-show="mobileMenuOpen"
+      class="fixed inset-0 z-50 lg:hidden flex"
+      role="dialog"
+      aria-modal="true"
+    >
+      <!-- Dark Translucent Backdrop -->
+      <div
+        x-show="mobileMenuOpen"
+        x-transition:enter="transition-opacity ease-linear duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        @click="mobileMenuOpen = false"
+        class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs"
+      ></div>
+
+      <!-- Slide-over Sidebar Panel -->
+      <div
+        x-show="mobileMenuOpen"
+        x-transition:enter="transition ease-in-out duration-250 transform"
+        x-transition:enter-start="-translate-x-full"
+        x-transition:enter-end="translate-x-0"
+        x-transition:leave="transition ease-in-out duration-200 transform"
+        x-transition:leave-start="translate-x-0"
+        x-transition:leave-end="-translate-x-full"
+        class="relative w-[300px] max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-10 overflow-hidden"
+      >
+        <!-- Drawer Header -->
+        <div class="p-4 bg-navy-900 text-white flex items-center justify-between border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-rmuti-600 flex items-center justify-center font-bold">
+              <i data-lucide="list-tree" class="w-4 h-4 text-white"></i>
+            </div>
+            <div>
+              <div class="text-sm font-bold">สารบัญคู่มือนักศึกษา</div>
+              <div class="text-[11px] text-rmuti-400" x-text="'กรองเฉพาะ: ' + currentLevelObj.name"></div>
+            </div>
+          </div>
+          <button
+            @click="mobileMenuOpen = false"
+            type="button"
+            class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Role Switcher Banner inside Mobile Drawer -->
+        <div class="p-3 bg-rmuti-50 border-b border-rmuti-100 flex items-center justify-between">
+          <div class="text-xs">
+            <span class="text-slate-500">ระดับที่เลือก:</span>
+            <span class="font-bold text-rmuti-700 ml-1" x-text="currentLevelObj.shortName"></span>
+          </div>
+          <button
+            @click="mobileMenuOpen = false; onboardingModalOpen = true"
+            type="button"
+            class="text-xs font-semibold text-rmuti-600 hover:text-rmuti-800 underline"
+          >
+            เปลี่ยนระดับ
+          </button>
+        </div>
+
+        <!-- Mobile Filtered Navigation List -->
+        <nav class="flex-1 overflow-y-auto p-3 space-y-3">
+          <template x-for="category in filteredCategories" :key="category.id">
+            <div class="border border-slate-200/80 rounded-xl overflow-hidden bg-slate-50/50">
+              <!-- Category Accordion Header -->
+              <button
+                @click="toggleCategory(category.id)"
+                type="button"
+                class="w-full px-3 py-2.5 text-left flex items-center justify-between gap-2 bg-slate-100/80 hover:bg-slate-200/60 transition"
+              >
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="w-6 h-6 rounded-md bg-white text-rmuti-600 shadow-2xs flex items-center justify-center text-xs font-bold shrink-0" x-text="category.number"></span>
+                  <span class="text-xs font-bold text-slate-800 leading-snug" x-text="category.title"></span>
+                </div>
+                <i
+                  data-lucide="chevron-down"
+                  class="w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200"
+                  :class="openCategories.includes(category.id) ? 'rotate-180' : ''"
+                ></i>
+              </button>
+
+              <!-- Subtopics -->
+              <div x-show="openCategories.includes(category.id)" class="p-1.5 space-y-1 bg-white">
+                <template x-for="topic in category.topics" :key="topic.id">
+                  <button
+                    @click="selectTopic(topic.id, true)"
+                    type="button"
+                    :class="currentTopicId === topic.id && !isSearching
+                      ? 'bg-rmuti-50 text-rmuti-700 border-l-4 border-rmuti-600 font-semibold'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'"
+                    class="w-full text-left px-2.5 py-2 rounded-lg text-xs transition flex flex-col gap-1"
+                  >
+                    <div class="flex items-start justify-between gap-1.5">
+                      <span class="leading-relaxed" x-text="topic.code + ' ' + topic.title"></span>
+                    </div>
+                    <div>
+                      <span
+                        :class="topic.roles.includes('all')
+                          ? 'bg-slate-100 text-slate-600 border-slate-200'
+                          : 'bg-rmuti-100/80 text-rmuti-700 border-rmuti-200'"
+                        class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border"
+                        x-text="getTopicBadgeText(topic)"
+                      ></span>
+                    </div>
+                  </button>
+                </template>
+              </div>
+            </div>
+          </template>
+        </nav>
+      </div>
+    </div>
+
+    <!-- ------------------------------------------------------------------- -->
+    <!-- 3B. DESKTOP STICKY LEFT SIDEBAR (Width ~280px / w-72)               -->
+    <!-- ------------------------------------------------------------------- -->
+    <aside class="hidden lg:flex lg:flex-col lg:w-[290px] lg:shrink-0 border-r border-slate-200 bg-white sticky top-[105px] h-[calc(100vh-105px)] select-none">
+      <!-- Active Filter Banner -->
+      <div class="p-4 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-orange-50/40">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-rmuti-600 flex items-center gap-1">
+            <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+            สารบัญกรองตามสิทธิ์
+          </span>
+          <button
+            @click="onboardingModalOpen = true"
+            type="button"
+            class="text-[11px] font-semibold text-rmuti-600 hover:text-rmuti-700 underline flex items-center gap-0.5"
+          >
+            <span>เปลี่ยนระดับ</span>
+          </button>
+        </div>
+        <div class="flex items-center gap-2.5 bg-white p-2.5 rounded-xl border border-orange-200/80 shadow-2xs">
+          <div class="w-9 h-9 rounded-lg bg-rmuti-600 text-white flex items-center justify-center font-bold text-sm shrink-0" x-text="currentLevelObj.badge"></div>
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-slate-900 truncate" x-text="currentLevelObj.name"></div>
+            <div class="text-[11px] text-slate-500">
+              แสดง <span class="font-semibold text-rmuti-600" x-text="totalFilteredTopicsCount"></span> หัวข้อที่เกี่ยวข้อง
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accordion Categories & Subtopics -->
+      <nav class="flex-1 overflow-y-auto p-3 space-y-2.5" aria-label="สารบัญคู่มือนักศึกษา">
+        <template x-for="category in filteredCategories" :key="category.id">
+          <div class="rounded-xl border border-slate-200/90 overflow-hidden bg-white shadow-2xs">
+            <!-- Category Accordion Header -->
+            <button
+              @click="toggleCategory(category.id)"
+              type="button"
+              class="w-full px-3 py-2.5 text-left flex items-center justify-between gap-2 bg-slate-50 hover:bg-slate-100/80 transition"
+            >
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-5 h-5 rounded-md bg-navy-900 text-white flex items-center justify-center text-[11px] font-bold shrink-0" x-text="category.number"></span>
+                <span class="text-xs font-bold text-slate-800 leading-snug" x-text="category.title"></span>
+              </div>
+              <i
+                data-lucide="chevron-down"
+                class="w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200"
+                :class="openCategories.includes(category.id) ? 'rotate-180 text-rmuti-600' : ''"
+              ></i>
+            </button>
+
+            <!-- Subtopic Items -->
+            <div
+              x-show="openCategories.includes(category.id)"
+              x-transition:enter="transition ease-out duration-150"
+              x-transition:enter-start="opacity-0 -translate-y-1"
+              x-transition:enter-end="opacity-100 translate-y-0"
+              class="p-1.5 space-y-1 divide-y divide-slate-100"
+            >
+              <template x-for="topic in category.topics" :key="topic.id">
+                <button
+                  @click="selectTopic(topic.id, false)"
+                  type="button"
+                  :class="currentTopicId === topic.id && !isSearching
+                    ? 'bg-orange-50/90 text-rmuti-700 font-semibold border-l-4 border-rmuti-600 shadow-2xs'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'"
+                  class="w-full text-left px-2.5 py-2 rounded-lg text-xs transition flex flex-col gap-1.5 group"
+                >
+                  <div class="flex items-start gap-1.5">
+                    <span
+                      :class="currentTopicId === topic.id && !isSearching ? 'text-rmuti-600 font-bold' : 'text-slate-400 group-hover:text-slate-600'"
+                      class="font-mono text-[11px] shrink-0 mt-0.5"
+                      x-text="topic.code"
+                    ></span>
+                    <span class="leading-snug" x-text="topic.title"></span>
+                  </div>
+                  <div class="flex items-center justify-between pl-5">
+                    <span
+                      :class="topic.roles.includes('all')
+                        ? 'bg-slate-100 text-slate-600 border-slate-200'
+                        : 'bg-orange-100/80 text-rmuti-700 border-orange-200'"
+                      class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border"
+                      x-text="getTopicBadgeText(topic)"
+                    ></span>
+                  </div>
+                </button>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <!-- Hidden Non-Relevant Topics Explanation Card -->
+        <div class="p-3 rounded-xl bg-slate-100/80 border border- dashed border-slate-300 text-[11px] text-slate-500 leading-relaxed">
+          <div class="font-semibold text-slate-700 flex items-center gap-1 mb-0.5">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+            ซ่อนเนื้อหาที่ไม่เกี่ยวข้องแล้ว
+          </div>
+          ระบบได้ซ่อนหัวข้อของระดับอื่น (<span x-text="hiddenTopicsCount"></span> หัวข้อ) ออกโดยอัตโนมัติ เพื่อให้อ่านง่ายและไม่สับสน
+        </div>
+      </nav>
+    </aside>
+
+    <!-- ------------------------------------------------------------------- -->
+    <!-- 4. MAIN CONTENT AREA                                                -->
+    <!-- ------------------------------------------------------------------- -->
+    <main class="flex-1 min-w-0 px-4 sm:px-8 py-6 lg:py-8 max-w-4xl mx-auto">
+
+      <!-- ================================================================= -->
+      <!-- 4A. SEARCH RESULTS VIEW (Shown when user types in Search Bar)     -->
+      <!-- ================================================================= -->
+      <div x-show="isSearching" x-cloak class="space-y-6">
+        <!-- Search Header Banner -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 text-xs font-semibold text-rmuti-600 uppercase tracking-wider mb-1">
+              <i data-lucide="search" class="w-4 h-4"></i>
+              <span>ระบบค้นหาอัจฉริยะ (Scoped Instant Search)</span>
+            </div>
+            <h1 class="text-lg sm:text-xl font-bold text-slate-900">
+              ผลการค้นหาสำหรับ <span class="text-rmuti-600">“<span x-text="searchQuery"></span>”</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+              คัดกรองเฉพาะข้อมูล <span class="font-semibold text-slate-700">[ส่วนกลาง]</span> และ <span class="font-semibold text-rmuti-600" x-text="'[เฉพาะ ' + currentLevelObj.shortName + ']'"></span>
+              — พบทั้งหมด <span class="font-bold text-slate-900" x-text="searchResults.length"></span> หัวข้อ
+            </p>
+          </div>
+          <button
+            @click="clearSearch()"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition self-start sm:self-center shrink-0"
+          >
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            กลับไปหน้าอ่านเนื้อหา
+          </button>
+        </div>
+
+        <!-- Search Result Cards -->
+        <div x-show="searchResults.length > 0" class="space-y-4">
+          <template x-for="item in searchResults" :key="item.id">
+            <article
+              @click="openTopicFromSearch(item.id)"
+              class="bg-white rounded-2xl p-5 border border-slate-200/90 hover:border-rmuti-400 shadow-xs hover:shadow-md transition cursor-pointer group"
+            >
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                  <span class="font-semibold text-slate-700" x-text="'หมวดที่ ' + item.categoryNumber + ': ' + item.categoryTitle"></span>
+                </div>
+                <span
+                  :class="item.roles.includes('all')
+                    ? 'bg-slate-100 text-slate-700 border-slate-200'
+                    : 'bg-orange-100 text-rmuti-700 border-orange-200'"
+                  class="px-2 py-0.5 text-[11px] font-semibold rounded-md border"
+                  x-text="getTopicBadgeText(item)"
+                ></span>
+              </div>
+
+              <!-- Highlighted Title -->
+              <h2
+                class="text-base sm:text-lg font-bold text-slate-900 group-hover:text-rmuti-600 transition mb-2"
+                x-html="highlightText(item.code + ' ' + item.title, searchQuery)"
+              ></h2>
+
+              <!-- Highlighted Snippet -->
+              <p
+                class="text-sm text-slate-600 leading-relaxed mb-3 font-body"
+                x-html="highlightText(item.summary, searchQuery)"
+              ></p>
+
+              <!-- Matched Keywords / Colloquial Synonyms -->
+              <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-[11px] text-slate-400">คำสำคัญ/ภาษาพูด:</span>
+                  <template x-for="kw in item.keywords" :key="kw">
+                    <span
+                      class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px]"
+                      x-html="highlightText(kw, searchQuery)"
+                    ></span>
+                  </template>
+                </div>
+                <span class="text-xs font-semibold text-rmuti-600 flex items-center gap-1 group-hover:translate-x-1 transition">
+                  อ่านรายละเอียด <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </span>
+              </div>
+            </article>
+          </template>
+        </div>
+
+        <!-- Empty Search State -->
+        <div
+          x-show="searchResults.length === 0"
+          class="bg-white rounded-2xl p-8 sm:p-12 text-center border border-slate-200"
+        >
+          <div class="w-14 h-14 rounded-2xl bg-orange-50 text-rmuti-600 flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="search-x" class="w-7 h-7"></i>
+          </div>
+          <h3 class="text-base sm:text-lg font-bold text-slate-900 mb-1">
+            ไม่พบหัวข้อที่ตรงกับ “<span x-text="searchQuery"></span>” ในระดับ <span class="text-rmuti-600" x-text="currentLevelObj.shortName"></span>
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mb-5">
+            คำค้นหานี้อาจเป็นระเบียบเฉพาะของระดับการศึกษาอื่น (เช่น เสื้อช็อป ปวช./ปวส. หรือ วิทยานิพนธ์ ป.โท/ป.เอก) หรือลองเลือกจากคำค้นหายอดฮิตด้านล่าง
+          </p>
+          <div class="flex flex-wrap justify-center gap-2">
+            <button
+              @click="onboardingModalOpen = true"
+              type="button"
+              class="px-4 py-2 rounded-xl text-xs font-semibold bg-rmuti-600 text-white hover:bg-rmuti-700 transition"
+            >
+              สลับระดับการศึกษา
+            </button>
+            <button
+              @click="clearSearch()"
+              type="button"
+              class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+            >
+              ล้างคำค้นหา
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- 4B. STANDARD DOCUMENT VIEW (Breadcrumb + Rich Article + Prev/Next)-->
+      <!-- ================================================================= -->
+      <div x-show="!isSearching && currentTopic" class="space-y-6">
+
+        <!-- Breadcrumb & Font Size Utility Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200">
+          <nav aria-label="Breadcrumb" class="flex items-center flex-wrap gap-1.5 text-xs text-slate-500">
+            <span class="font-medium text-slate-600 flex items-center gap-1">
+              <i data-lucide="book" class="w-3.5 h-3.5 text-rmuti-600"></i>
+              <span x-text="'คู่มือนักศึกษา ' + academicYear"></span>
+            </span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span class="text-slate-600" x-text="currentCategory ? currentCategory.title : ''"></span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span class="font-semibold text-rmuti-600" x-text="currentTopic ? currentTopic.code + ' ' + currentTopic.title : ''"></span>
+          </nav>
+
+          <!-- Reader Controls (Font Size Adjuster) -->
+          <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 text-xs shadow-2xs">
+            <span class="text-[11px] text-slate-400 px-1.5">ขนาดตัวอักษร:</span>
+            <button
+              @click="fontSize = 'text-sm'"
+              :class="fontSize === 'text-sm' ? 'bg-rmuti-600 text-white' : 'text-slate-600 hover:bg-slate-100'"
+              class="px-2 py-0.5 rounded font-medium transition"
+              type="button"
+            >A-</button>
+            <button
+              @click="fontSize = 'text-base'"
+              :class="fontSize === 'text-base' ? 'bg-rmuti-600 text-white' : 'text-slate-600 hover:bg-slate-100'"
+              class="px-2 py-0.5 rounded font-medium transition"
+              type="button"
+            >A</button>
+            <button
+              @click="fontSize = 'text-lg'"
+              :class="fontSize === 'text-lg' ? 'bg-rmuti-600 text-white' : 'text-slate-600 hover:bg-slate-100'"
+              class="px-2 py-0.5 rounded font-medium transition"
+              type="button"
+            >A+</button>
+          </div>
+        </div>
+
+        <!-- Main Article Card -->
+        <article class="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+
+          <!-- Article Header Banner -->
+          <div class="p-6 sm:p-8 bg-gradient-to-br from-navy-900 via-navy-900 to-slate-800 text-white relative overflow-hidden">
+            <div class="relative z-10">
+              <!-- Badges Row -->
+              <div class="flex flex-wrap items-center gap-2 mb-3">
+                <span
+                  :class="currentTopic.roles.includes('all')
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+                    : 'bg-rmuti-500/25 text-rmuti-300 border-rmuti-400/40'"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border"
+                >
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                  <span x-text="getTopicBadgeText(currentTopic)"></span>
+                </span>
+                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-slate-200">
+                  ปีการศึกษา <span x-text="academicYear"></span>
+                </span>
+                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-slate-300 flex items-center gap-1">
+                  <i data-lucide="clock" class="w-3 h-3"></i>
+                  อ่านจบใน <span x-text="currentTopic.readTime"></span>
+                </span>
+              </div>
+
+              <!-- Topic Title -->
+              <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white leading-snug mb-3">
+                <span class="text-rmuti-400 mr-1.5" x-text="currentTopic.code"></span>
+                <span x-text="currentTopic.title"></span>
+              </h1>
+
+              <!-- Topic Summary -->
+              <p class="text-slate-300 text-sm sm:text-base leading-relaxed max-w-3xl font-body" x-text="currentTopic.summary"></p>
+
+              <!-- Colloquial Keywords Chips -->
+              <div class="flex flex-wrap items-center gap-1.5 mt-4 pt-4 border-t border-white/10">
+                <span class="text-[11px] text-slate-400 mr-1 flex items-center gap-1">
+                  <i data-lucide="tag" class="w-3 h-3 text-rmuti-400"></i> คำค้นหาที่เกี่ยวข้อง:
+                </span>
+                <template x-for="kw in currentTopic.keywords" :key="kw">
+                  <button
+                    @click="triggerQuickSearch(kw)"
+                    type="button"
+                    class="px-2 py-0.5 rounded-md bg-white/10 hover:bg-rmuti-600 text-slate-200 hover:text-white text-[11px] transition"
+                    x-text="kw"
+                  ></button>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Highlight Notification (when opened from search) -->
+          <div
+            x-show="activeHighlightTerm"
+            x-cloak
+            class="px-6 py-2.5 bg-yellow-50 border-b border-yellow-200 flex items-center justify-between text-xs text-yellow-900"
+          >
+            <div class="flex items-center gap-2">
+              <i data-lucide="highlighter" class="w-4 h-4 text-yellow-600"></i>
+              <span>กำลังไฮไลต์คำค้นหา: <strong class="underline" x-text="activeHighlightTerm"></strong> ในเนื้อหาบทความนี้</span>
+            </div>
+            <button
+              @click="activeHighlightTerm = ''"
+              type="button"
+              class="font-semibold text-yellow-800 hover:text-yellow-950 underline"
+            >
+              ปิดไฮไลต์
+            </button>
+          </div>
+
+          <!-- Article Body Content -->
+          <div class="p-6 sm:p-8 content-prose space-y-6" :class="fontSize">
+            <!-- Key Highlight Callout Box -->
+            <div
+              x-show="currentTopic.callout"
+              :class="{
+                'bg-orange-50/90 border-rmuti-500 text-orange-950': currentTopic.callout?.type === 'warning',
+                'bg-blue-50/90 border-blue-500 text-blue-950': currentTopic.callout?.type === 'info',
+                'bg-rose-50/90 border-rose-500 text-rose-950': currentTopic.callout?.type === 'danger',
+                'bg-emerald-50/90 border-emerald-500 text-emerald-950': currentTopic.callout?.type === 'success'
+              }"
+              class="p-4 sm:p-5 rounded-xl border-l-4 shadow-2xs"
+            >
+              <div class="flex items-start gap-3">
+                <i data-lucide="alert-circle" class="w-5 h-5 shrink-0 mt-0.5 text-rmuti-600"></i>
+                <div>
+                  <h3 class="font-bold text-sm sm:text-base mb-1" x-text="currentTopic.callout?.title"></h3>
+                  <p class="text-xs sm:text-sm leading-relaxed opacity-90" x-html="highlightText(currentTopic.callout?.text || '', activeHighlightTerm)"></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic HTML Content Sections (Tables, Step-by-Step, Guidelines) -->
+            <div
+              class="space-y-6 text-slate-700"
+              x-html="highlightHtmlContent(currentTopic.contentHtml, activeHighlightTerm)"
+            ></div>
+
+            <!-- Related Downloads & External Links Section -->
+            <div class="pt-6 border-t border-slate-200">
+              <h3 class="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+                <i data-lucide="folder-down" class="w-5 h-5 text-rmuti-600"></i>
+                <span>เอกสารดาวน์โหลด / ลิงก์ระบบที่เกี่ยวข้อง</span>
+              </h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <template x-for="doc in currentTopic.downloads" :key="doc.title">
+                  <button
+                    @click="triggerDownloadToast(doc)"
+                    type="button"
+                    class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-rmuti-500 hover:bg-orange-50/40 transition text-left group"
+                  >
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div
+                        :class="doc.type === 'pdf' ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'"
+                        class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs uppercase"
+                        x-text="doc.type === 'pdf' ? 'PDF' : 'LINK'"
+                      ></div>
+                      <div class="min-w-0">
+                        <div class="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-rmuti-600 truncate" x-text="doc.title"></div>
+                        <div class="text-[11px] text-slate-500 truncate" x-text="doc.subtitle"></div>
+                      </div>
+                    </div>
+                    <i
+                      :data-lucide="doc.type === 'pdf' ? 'download' : 'external-link'"
+                      class="w-4 h-4 text-slate-400 group-hover:text-rmuti-600 shrink-0 ml-2"
+                    ></i>
+                  </button>
+                </template>
+              </div>
+            </div>
+          </div>
+
+        </article>
+
+        <!-- Previous / Next Topic Navigation Footer -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <!-- Previous Topic Button -->
+          <div>
+            <button
+              x-show="prevTopic"
+              @click="selectTopic(prevTopic.id, false)"
+              type="button"
+              class="w-full h-full p-4 rounded-2xl bg-white border border-slate-200 hover:border-rmuti-500 shadow-2xs hover:shadow-md transition text-left flex items-center gap-3 group"
+            >
+              <div class="w-9 h-9 rounded-xl bg-slate-100 group-hover:bg-rmuti-50 text-slate-600 group-hover:text-rmuti-600 flex items-center justify-center shrink-0 transition">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-[11px] text-slate-400 font-medium">หัวข้อก่อนหน้า (Previous)</div>
+                <div class="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-rmuti-600 truncate" x-text="prevTopic ? prevTopic.code + ' ' + prevTopic.title : ''"></div>
+              </div>
+            </button>
+          </div>
+
+          <!-- Next Topic Button -->
+          <div>
+            <button
+              x-show="nextTopic"
+              @click="selectTopic(nextTopic.id, false)"
+              type="button"
+              class="w-full h-full p-4 rounded-2xl bg-white border border-slate-200 hover:border-rmuti-500 shadow-2xs hover:shadow-md transition text-right flex items-center justify-end gap-3 group"
+            >
+              <div class="min-w-0">
+                <div class="text-[11px] text-slate-400 font-medium">หัวข้อถัดไป (Next)</div>
+                <div class="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-rmuti-600 truncate" x-text="nextTopic ? nextTopic.code + ' ' + nextTopic.title : ''"></div>
+              </div>
+              <div class="w-9 h-9 rounded-xl bg-slate-100 group-hover:bg-rmuti-50 text-slate-600 group-hover:text-rmuti-600 flex items-center justify-center shrink-0 transition">
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Portal Footer -->
+        <footer class="pt-6 pb-10 text-center text-xs text-slate-400 border-t border-slate-200/80">
+          <p class="font-medium text-slate-500">งานพัฒนาวิชาการและส่งเสริมการศึกษา (ADEP) สำนักส่งเสริมวิชาการและงานทะเบียน มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน</p>
+          <p class="mt-1">ระบบคู่มือนักศึกษาออนไลน์อัจฉริยะ (RMUTI Smart Student Guide) • ประจำปีการศึกษา <span x-text="academicYear"></span></p>
+        </footer>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 5. SMART ONBOARDING MODAL (Role Selection + LocalStorage Persistence) -->
+  <!-- ===================================================================== -->
+  <div
+    x-cloak
+    x-show="onboardingModalOpen"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+    role="dialog"
+    aria-modal="true"
+  >
+    <!-- Backdrop -->
+    <div
+      x-show="onboardingModalOpen"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      @click="onboardingModalOpen = false"
+      class="fixed inset-0 bg-navy-950/75 backdrop-blur-xs"
+    ></div>
+
+    <!-- Modal Box -->
+    <div
+      x-show="onboardingModalOpen"
+      x-transition:enter="transition ease-out duration-250 transform"
+      x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+      x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-150 transform"
+      x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+      x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+      class="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden z-10 my-8"
+    >
+      <!-- Top Header -->
+      <div class="p-6 sm:p-7 bg-gradient-to-r from-navy-900 via-navy-800 to-rmuti-900 text-white relative">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-rmuti-600 flex items-center justify-center shadow-lg shadow-rmuti-600/40 shrink-0">
+              <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+            </div>
+            <div>
+              <span class="inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rmuti-500/30 text-rmuti-300 rounded-md border border-rmuti-400/30 mb-1">
+                Smart Role Personalization
+              </span>
+              <h2 class="text-lg sm:text-xl font-bold text-white">เลือกระดับการศึกษาของคุณ</h2>
+              <p class="text-xs sm:text-sm text-slate-300 mt-0.5">
+                ระบบจะคัดกรองเฉพาะ <strong>"ข้อมูลส่วนกลาง"</strong> และ <strong>"ระเบียบเฉพาะระดับของคุณ"</strong> เท่านั้น
+              </p>
+            </div>
+          </div>
+          <button
+            @click="onboardingModalOpen = false"
+            type="button"
+            class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition"
+            title="ปิดหน้าต่าง"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 5 Education Level Cards -->
+      <div class="p-6 sm:p-7 space-y-3 max-h-[65vh] overflow-y-auto">
+        <template x-for="lvl in educationLevels" :key="lvl.id">
+          <button
+            @click="selectEducationLevel(lvl.id)"
+            type="button"
+            :class="currentLevel === lvl.id
+              ? 'border-2 border-rmuti-600 bg-orange-50/70 ring-4 ring-rmuti-500/10'
+              : 'border border-slate-200 hover:border-rmuti-400 hover:bg-slate-50'"
+            class="w-full p-4 rounded-2xl transition text-left flex items-center justify-between gap-4 group"
+          >
+            <div class="flex items-center gap-3.5 min-w-0">
+              <div
+                :class="currentLevel === lvl.id
+                  ? 'bg-rmuti-600 text-white'
+                  : 'bg-slate-100 text-slate-700 group-hover:bg-rmuti-100 group-hover:text-rmuti-700'"
+                class="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 transition"
+                x-text="lvl.badge"
+              ></div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-sm sm:text-base text-slate-900" x-text="lvl.name"></span>
+                  <span
+                    x-show="currentLevel === lvl.id"
+                    class="px-2 py-0.5 text-[10px] font-bold bg-rmuti-600 text-white rounded-full"
+                  >กำลังเลือกใช้งาน</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5 truncate" x-text="lvl.description"></p>
+              </div>
+            </div>
+            <div class="shrink-0 flex items-center gap-2">
+              <span class="text-xs font-semibold text-rmuti-600 hidden sm:inline group-hover:translate-x-0.5 transition">เลือก</span>
+              <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400 group-hover:text-rmuti-600"></i>
+            </div>
+          </button>
+        </template>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+        <div class="flex items-center gap-1.5">
+          <i data-lucide="save" class="w-4 h-4 text-rmuti-600"></i>
+          <span>บันทึกการตั้งค่าไว้ในเบราว์เซอร์ (`localStorage`) อัตโนมัติ เปลี่ยนใหม่ได้ตลอดเวลาที่มุมขวาบน</span>
+        </div>
+        <button
+          @click="onboardingModalOpen = false"
+          type="button"
+          class="px-4 py-2 rounded-xl bg-navy-900 text-white font-semibold hover:bg-slate-800 transition shrink-0"
+        >
+          ดำเนินการต่อ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 6. HYBRID MODE E-BOOK / PDF MODAL (Original Flipbook Alternative)     -->
+  <!-- ===================================================================== -->
+  <div
+    x-cloak
+    x-show="ebookModalOpen"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div
+      @click="ebookModalOpen = false"
+      class="fixed inset-0 bg-navy-950/75 backdrop-blur-xs"
+    ></div>
+
+    <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden z-10">
+      <div class="p-6 bg-navy-900 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-rmuti-600 flex items-center justify-center">
+            <i data-lucide="book-open" class="w-5 h-5 text-white"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base">โหมดรูปเล่ม E-Book ดั้งเดิม & ดาวน์โหลด PDF</h3>
+            <p class="text-xs text-slate-400">คู่มือนักศึกษาประจำปีการศึกษา <span x-text="academicYear"></span></p>
+          </div>
+        </div>
+        <button @click="ebookModalOpen = false" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div class="p-4 rounded-2xl bg-orange-50 border border-orange-200 text-xs text-orange-950 leading-relaxed">
+          <strong>คำแนะนำ:</strong> โหมด <strong>Smart Web Portal</strong> ปัจจุบันได้คัดกรองเฉพาะเนื้อหาระดับ <strong x-text="currentLevelObj.shortName"></strong> ให้คุณอ่านง่ายบนมือถือแล้ว แต่หากต้องการเปิดหน้ากระดาษ A4 เหมือนเล่มจริง สามารถเลือกตัวเลือกด้านล่างได้ทันที
+        </div>
+
+        <div class="space-y-2.5">
+          <button
+            @click="triggerDownloadToast({ title: 'WebGL 3D Flipbook (sg/student-guide-' + academicYear + ')', subtitle: 'กำลังจำลองการเปิดหน้า Flipbook ฉบับเต็ม' }); ebookModalOpen = false"
+            type="button"
+            class="w-full p-4 rounded-2xl border border-slate-200 hover:border-rmuti-500 hover:bg-slate-50 flex items-center justify-between transition text-left"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-rmuti-100 text-rmuti-600 flex items-center justify-center">
+                <i data-lucide="layers" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-sm font-bold text-slate-900">เปิด WebGL 3D Flipbook (E-Book เล่มเต็ม)</div>
+                <div class="text-xs text-slate-500" x-text="'URL เดิม: adepservice.rmuti.ac.th/sg/student-guide-' + academicYear"></div>
+              </div>
+            </div>
+            <i data-lucide="external-link" class="w-4 h-4 text-slate-400"></i>
+          </button>
+
+          <button
+            @click="triggerDownloadToast({ title: 'คู่มือนักศึกษาฉบับคัดกรอง (' + currentLevelObj.shortName + ') ปี ' + academicYear + '.pdf', subtitle: 'ดาวน์โหลดไฟล์ PDF เฉพาะระดับการศึกษาของคุณ' }); ebookModalOpen = false"
+            type="button"
+            class="w-full p-4 rounded-2xl border border-slate-200 hover:border-rmuti-500 hover:bg-slate-50 flex items-center justify-between transition text-left"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
+                <i data-lucide="file-down" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-sm font-bold text-slate-900">ดาวน์โหลด PDF เฉพาะระดับ <span class="text-rmuti-600" x-text="currentLevelObj.shortName"></span></div>
+                <div class="text-xs text-slate-500">ขนาดไฟล์ ~4.2 MB (ตัดหน้าของระดับอื่นออกแล้ว)</div>
+              </div>
+            </div>
+            <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+          </button>
+
+          <button
+            @click="triggerDownloadToast({ title: 'คู่มือนักศึกษาฉบับรวมทุกระดับ ปี ' + academicYear + '.pdf', subtitle: 'ดาวน์โหลดไฟล์ PDF ฉบับเต็มทุกระดับการศึกษา' }); ebookModalOpen = false"
+            type="button"
+            class="w-full p-4 rounded-2xl border border-slate-200 hover:border-rmuti-500 hover:bg-slate-50 flex items-center justify-between transition text-left"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
+                <i data-lucide="book" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-sm font-bold text-slate-900">ดาวน์โหลด PDF ฉบับเต็ม (รวมทุกระดับการศึกษา)</div>
+                <div class="text-xs text-slate-500">ขนาดไฟล์ ~24.8 MB (186 หน้า A4)</div>
+              </div>
+            </div>
+            <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 7. TOAST NOTIFICATION (Feedback for Year Switch / Role / Downloads)   -->
+  <!-- ===================================================================== -->
+  <div
+    x-cloak
+    x-show="toast.visible"
+    x-transition:enter="transition ease-out duration-200 transform"
+    x-transition:enter-start="opacity-0 translate-y-4"
+    x-transition:enter-end="opacity-100 translate-y-0"
+    x-transition:leave="transition ease-in duration-150 transform"
+    x-transition:leave-start="opacity-100 translate-y-0"
+    x-transition:leave-end="opacity-0 translate-y-4"
+    class="fixed bottom-5 right-5 z-50 max-w-sm bg-navy-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-3"
+  >
+    <div class="w-8 h-8 rounded-xl bg-rmuti-600 flex items-center justify-center shrink-0">
+      <i data-lucide="bell-ring" class="w-4 h-4 text-white"></i>
+    </div>
+    <div class="text-xs">
+      <div class="font-bold text-white" x-text="toast.title"></div>
+      <div class="text-slate-300 mt-0.5" x-text="toast.message"></div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 8. APPLICATION LOGIC & MOCK DATA (Alpine.js)                          -->
+  <!-- ===================================================================== -->
+  <script>
+    function studentGuideApp() {
+      return {
+        academicYear: '2569',
+        currentLevel: 'bachelor',
+        currentTopicId: '1.1',
+        searchQuery: '',
+        activeHighlightTerm: '',
+        fontSize: 'text-base',
+        mobileMenuOpen: false,
+        onboardingModalOpen: false,
+        ebookModalOpen: false,
+        openCategories: ['cat-1', 'cat-2', 'cat-3', 'cat-4'],
+        toast: {
+          visible: false,
+          title: '',
+          message: '',
+          timeout: null
+        },
+
+        // 5 ระดับการศึกษาตามโครงสร้าง มทร.อีสาน
+        educationLevels: [
+          {
+            id: 'voc',
+            badge: 'ปวช.',
+            shortName: 'ปวช.',
+            name: 'ประกาศนียบัตรวิชาชีพ (ปวช.)',
+            description: 'เน้นเกณฑ์เวลาเรียน 80%, การแก้ ขร./มส., การฝึกงาน และระเบียบชุดปฏิบัติการโรงฝึกงาน/เสื้อช็อป'
+          },
+          {
+            id: 'hvoc',
+            badge: 'ปวส.',
+            shortName: 'ปวส.',
+            name: 'ประกาศนียบัตรวิชาชีพชั้นสูง (ปวส.)',
+            description: 'เน้นการลงทะเบียน, การเทียบโอนรายวิชา, เกณฑ์เวลาเรียน 80%, การฝึกงาน และระเบียบเสื้อช็อป'
+          },
+          {
+            id: 'bachelor',
+            badge: 'ป.ตรี',
+            shortName: 'ป.ตรี',
+            name: 'ปริญญาตรี (ป.ตรี)',
+            description: 'เน้นการเพิ่ม-ถอน (ติด W), เทียบโอน, เกณฑ์ GPAX 2.00 (ติดโปร/รีไทร์), เครื่องแบบและชั่วโมงกิจกรรม'
+          },
+          {
+            id: 'master',
+            badge: 'ป.โท',
+            shortName: 'ป.โท',
+            name: 'ปริญญาโท (ป.โท)',
+            description: 'เน้นแผนการศึกษา แผน ก / แผน ข, วิทยานิพนธ์, การตีพิมพ์วารสาร TCI/Scopus และเกณฑ์ GPAX 3.00'
+          },
+          {
+            id: 'phd',
+            badge: 'ป.เอก',
+            shortName: 'ป.เอก',
+            name: 'ปริญญาเอก (ป.เอก)',
+            description: 'เน้นดุษฎีนิพนธ์ แบบ 1 / แบบ 2, การสอบวัดคุณสมบัติ (QE) และการตีพิมพ์วารสารนานาชาติ Scopus/ISI'
+          }
+        ],
+
+        // Quick Search Tags (คำค้นหายอดฮิตภาษาพูด)
+        quickSearchTags: [
+          { label: 'ดรอปเรียน / ถอนวิชา (W)', keyword: 'ดรอป' },
+          { label: 'ติดโปร / รีไทร์', keyword: 'ติดโปร' },
+          { label: 'เสื้อช็อป / แต่งกาย', keyword: 'เสื้อช็อป' },
+          { label: 'เทียบโอนเกรด', keyword: 'เทียบโอน' },
+          { label: 'ขาดเรียน / ติด ขร.', keyword: 'ติด ขร' },
+          { label: 'วิทยานิพนธ์ / สอบ QE', keyword: 'สอบ QE' },
+          { label: 'ชั่วโมงกิจกรรม', keyword: 'ชั่วโมงกิจกรรม' },
+          { label: 'กยศ. / Wi-Fi', keyword: 'กยศ.' }
+        ],
+
+        // Mock Data: 4 หมวดหมู่หลัก 10 หัวข้อย่อย ครอบคลุมทั้ง 5 ระดับการศึกษา
+        rawCategories: [
+          {
+            id: 'cat-1',
+            number: '1',
+            title: 'ข้อมูลทั่วไปและบริการมหาวิทยาลัย',
+            topics: [
+              {
+                id: '1.1',
+                code: '1.1',
+                title: 'ประวัติ ปรัชญา และอัตลักษณ์ มทร.อีสาน',
+                roles: ['all'],
+                readTime: '2 นาที',
+                summary: 'รู้จักมหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน (RMUTI) วิทยาเขตและศูนย์การศึกษา ปรัชญา อัตลักษณ์ “บัณฑิตนักปฏิบัติ” และหน่วยงานบริการวิชาการ ADEP',
+                keywords: ['ประวัติ มทร.อีสาน', 'บัณฑิตนักปฏิบัติ', 'สีประจำมหาวิทยาลัย', 'ADEP', 'สำนักส่งเสริมวิชาการและงานทะเบียน'],
+                callout: {
+                  type: 'info',
+                  title: 'อัตลักษณ์นักศึกษา มทร.อีสาน: “บัณฑิตนักปฏิบัติ”',
+                  text: 'มทร.อีสาน มุ่งผลิตนักศึกษาที่มีทักษะปฏิบัติงานจริง คิดวิเคราะห์ และพร้อมทำงานร่วมกับภาคอุตสาหกรรมทันทีเมื่อสำเร็จการศึกษา'
+                },
+                contentHtml: `
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">ข้อมูลสำคัญของมหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน</h2>
+                  <p>มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน (Rajamangala University of Technology Isan : RMUTI) จัดตั้งขึ้นตามพระราชบัญญัติมหาวิทยาลัยเทคโนโลยีราชมงคล พ.ศ. 2548 จัดการศึกษาครอบคลุมตั้งแต่ระดับ <strong>ปวช., ปวส., ปริญญาตรี, ปริญญาโท และปริญญาเอก</strong> ใน 5 พื้นที่การศึกษา ได้แก่ ศูนย์กลางนครราชสีมา, วิทยาเขตขอนแก่น, วิทยาเขตสกลนคร, วิทยาเขตสุรินทร์ และโครงการจัดตั้งวิทยาเขตร้อยเอ็ด ณ ทุ่งกุลาร้องไห้</p>
+
+                  <div class="overflow-x-auto my-4">
+                    <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs sm:text-sm">
+                      <thead class="bg-slate-100 text-slate-800">
+                        <tr>
+                          <th class="p-3 border border-slate-200 font-bold w-1/3">หัวข้อ</th>
+                          <th class="p-3 border border-slate-200 font-bold">รายละเอียดประจำมหาวิทยาลัย</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-200">
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">สีประจำมหาวิทยาลัย</td>
+                          <td class="p-3">สีแสด (สีส้มเข้ม RMUTI Orange) หมายถึง ความก้าวหน้า ความรุ่งโรจน์ และพลังแห่งปัญญา</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">ต้นไม้ประจำมหาวิทยาลัย</td>
+                          <td class="p-3">ต้นแคแสด (Spathodea campanulata)</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">อัตลักษณ์ (Identity)</td>
+                          <td class="p-3">บัณฑิตนักปฏิบัติ (Hands-on Graduate)</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">เอกลักษณ์ (Uniqueness)</td>
+                          <td class="p-3">มหาวิทยาลัยแห่งเทคโนโลยีและนวัตกรรมเพื่อการพัฒนาท้องถิ่นและอนุภูมิภาคลุ่มน้ำโขง</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                `,
+                downloads: [
+                  { title: 'แผนผังอาคารเรียนและหน่วยงาน มทร.อีสาน (Campus Map)', subtitle: 'ไฟล์ PDF ความละเอียดสูง สำหรับนักศึกษาใหม่', type: 'pdf' },
+                  { title: 'เว็บไซต์สำนักส่งเสริมวิชาการและงานทะเบียน (ADEP)', subtitle: 'adepservice.rmuti.ac.th', type: 'link' }
+                ]
+              },
+              {
+                id: '1.2',
+                code: '1.2',
+                title: 'ปฏิทินการศึกษา ประจำปีการศึกษา 2569',
+                roles: ['all'],
+                readTime: '3 นาที',
+                summary: 'กำหนดการเปิด-ปิดภาคการศึกษา วันลงทะเบียนเรียน วันชำระเงินค่าบำรุงการศึกษา ช่วงเพิ่ม-ถอนรายวิชา และกำหนดการสอบกลางภาค/ปลายภาค',
+                keywords: ['ปฏิทินการศึกษา', 'เปิดเทอม', 'วันลงทะเบียน', 'วันสอบ', 'ปิดเทอม', 'จ่ายค่าเทอม'],
+                callout: {
+                  type: 'warning',
+                  title: 'ข้อควรระวังเรื่องกำหนดการลงทะเบียนและชำระเงิน',
+                  text: 'การลงทะเบียนเรียนจะสมบูรณ์เมื่อนักศึกษาชำระเงินค่าบำรุงการศึกษาภายในระยะเวลาที่กำหนดเท่านั้น หากพ้นกำหนดจะต้องเสียค่าปรับลงทะเบียนล่าช้าวันละ 50 บาท (สูงสุดไม่เกิน 1,000 บาท)'
+                },
+                contentHtml: `
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">สรุปกำหนดการสำคัญ ภาคการศึกษาที่ 1 และ 2</h2>
+                  <div class="overflow-x-auto my-3">
+                    <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs sm:text-sm">
+                      <thead class="bg-navy-900 text-white">
+                        <tr>
+                          <th class="p-3 border border-slate-700">กิจกรรมทางการศึกษา</th>
+                          <th class="p-3 border border-slate-700">ภาคการศึกษาที่ 1</th>
+                          <th class="p-3 border border-slate-700">ภาคการศึกษาที่ 2</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-200">
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">ลงทะเบียนเรียนล่วงหน้าผ่านระบบ ESS</td>
+                          <td class="p-3">พฤษภาคม</td>
+                          <td class="p-3">ตุลาคม</td>
+                        </tr>
+                        <tr class="bg-orange-50/50">
+                          <td class="p-3 font-semibold text-rmuti-700">วันเปิดภาคการศึกษา (เริ่มเรียนสัปดาห์แรก)</td>
+                          <td class="p-3 font-semibold">สัปดาห์ที่ 2 ของเดือนมิถุนายน</td>
+                          <td class="p-3 font-semibold">สัปดาห์ที่ 2 ของเดือนพฤศจิกายน</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">ช่วงเพิ่ม-ถอนรายวิชา (ไม่ติด W)</td>
+                          <td class="p-3">ภายใน 2 สัปดาห์แรกหลังเปิดเทอม</td>
+                          <td class="p-3">ภายใน 2 สัปดาห์แรกหลังเปิดเทอม</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">สอบกลางภาค (Midterm Exam)</td>
+                          <td class="p-3">สัปดาห์ที่ 8 ของภาคเรียน</td>
+                          <td class="p-3">สัปดาห์ที่ 8 ของภาคเรียน</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">วันสุดท้ายของการถอนรายวิชา (ติด W)</td>
+                          <td class="p-3">ภายในสัปดาห์ที่ 12 ของภาคเรียน</td>
+                          <td class="p-3">ภายในสัปดาห์ที่ 12 ของภาคเรียน</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">สอบปลายภาค (Final Exam)</td>
+                          <td class="p-3">สัปดาห์ที่ 16–17 ของภาคเรียน</td>
+                          <td class="p-3">สัปดาห์ที่ 16–17 ของภาคเรียน</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                `,
+                downloads: [
+                  { title: 'ประกาศปฏิทินการศึกษาฉบับเต็ม (PDF)', subtitle: 'สำนักส่งเสริมวิชาการและงานทะเบียน มทร.อีสาน', type: 'pdf' },
+                  { title: 'ระบบบริการการศึกษา (ESS RMUTI)', subtitle: 'ess.rmuti.ac.th สำหรับตรวจสอบตารางเรียนและตารางสอบ', type: 'link' }
+                ]
+              },
+              {
+                id: '1.3',
+                code: '1.3',
+                title: 'บริการ Wi-Fi, บัญชีอีเมล (@rmuti.ac.th) และสวัสดิการรักษาพยาบาล/กยศ.',
+                roles: ['all'],
+                readTime: '3 นาที',
+                summary: 'การเปิดใช้งาน RMUTI Single Sign-On (RMUTI Wi-Fi & Google Workspace/Microsoft 365), สิทธิ์ประกันอุบัติเหตุห้องพยาบาล และกองทุนกู้ยืมเพื่อการศึกษา (กยศ.)',
+                keywords: ['Wi-Fi', 'อีเมลมหาวิทยาลัย', 'rmuti.ac.th', 'กยศ.', 'กู้ กยศ', 'ประกันอุบัติเหตุ', 'ห้องพยาบาล', 'สวัสดิการ'],
+                callout: {
+                  type: 'success',
+                  title: 'สิทธิ์ฟรีสำหรับนักศึกษาทุกระดับการศึกษา',
+                  text: 'บัญชี @rmuti.ac.th สามารถใช้เชื่อมต่อ Wi-Fi ทั่วมหาวิทยาลัย เข้าใช้งานระบบลงทะเบียน ESS และรับสิทธิ์ซอฟต์แวร์ลิขสิทธิ์เพื่อการศึกษาได้ตลอดสถานภาพนักศึกษา'
+                },
+                contentHtml: `
+                  <h2 class="text-lg font-bold text-slate-900 mb-3">ขั้นตอนการเข้าใช้งานระบบสารสนเทศและสวัสดิการ</h2>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-4">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                      <div class="text-xs font-bold text-rmuti-600 uppercase mb-1">บริการที่ 1</div>
+                      <h3 class="font-bold text-slate-900 text-sm mb-1.5">RMUTI Wi-Fi & อีเมล</h3>
+                      <p class="text-xs text-slate-600">เชื่อมต่อเครือข่ายชื่อ <code>@RMUTI-WiFi</code> โดยใช้รหัสนักศึกษา (ไม่มีขีด) และรหัสผ่านเดียวกับระบบ Internet Account ของสำนักวิทยบริการฯ</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                      <div class="text-xs font-bold text-rmuti-600 uppercase mb-1">บริการที่ 2</div>
+                      <h3 class="font-bold text-slate-900 text-sm mb-1.5">ประกันอุบัติเหตุและห้องพยาบาล</h3>
+                      <p class="text-xs text-slate-600">นักศึกษาทุกคนได้รับความคุ้มครองประกันอุบัติเหตุกลุ่มตลอด 24 ชม. สามารถเบิกค่ารักษาพยาบาลจากอุบัติเหตุได้ตามวงเงินกรมธรรม์ที่กองพัฒนานักศึกษา</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                      <div class="text-xs font-bold text-rmuti-600 uppercase mb-1">บริการที่ 3</div>
+                      <h3 class="font-bold text-slate-900 text-sm mb-1.5">ทุนการศึกษาและ กยศ.</h3>
+                      <p class="text-xs text-slate-600">ผู้กู้ กยศ. รายเก่าและรายใหม่ ยื่นคำขอกู้ผ่านแอปพลิเคชัน <strong>กยศ. Connect</strong> และส่งเอกสารพร้อมชั่วโมงจิตอาสา 36 ชั่วโมงต่อปีการศึกษา</p>
+                    </div>
+                  </div>
+                `,
+                downloads: [
+                  { title: 'คู่มือการตั้งค่า RMUTI Wi-Fi และอีเมลนักศึกษา', subtitle: 'สำนักวิทยบริการและเทคโนโลยีสารสนเทศ (ARIT)', type: 'pdf' },
+                  { title: 'แบบฟอร์มเบิกสินไหมประกันอุบัติเหตุนักศึกษา', subtitle: 'กองพัฒนานักศึกษา มทร.อีสาน', type: 'pdf' }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'cat-2',
+            number: '2',
+            title: 'การลงทะเบียนเรียนและสถานภาพนักศึกษา',
+            topics: [
+              {
+                id: '2.1',
+                code: '2.1',
+                title: 'การลงทะเบียนเรียน การเพิ่ม-ถอนรายวิชา (ติด W) และการลาพักการศึกษา',
+                roles: ['voc', 'hvoc', 'bachelor'],
+                readTime: '4 นาที',
+                summary: 'ระเบียบจำนวนหน่วยกิตต่ำสุด-สูงสุดต่อภาคเรียน ขั้นตอนการเพิ่ม-ถอนรายวิชา (Drop / ติด W) และการยื่นคำร้องขอลาพักการศึกษา (ดรอปเรียนทั้งเทอม / รักษาสภาพ)',
+                keywords: ['ดรอปเรียน', 'ดรอป', 'ถอนวิชา', 'ติด W', 'รักษาสภาพ', 'ลาพักการศึกษา', 'เพิ่มถอน'],
+                callout: {
+                  type: 'warning',
+                  title: 'เข้าใจคำว่า “ดรอป” ให้ถูกต้อง: ถอนรายวิชา (ติด W) vs ลาพักการศึกษา (พักทั้งเทอม)',
+                  text: 'ภาษาพูดที่นักศึกษาเรียกว่า "ดรอปวิชา" คือการถอนรายวิชา (Withdrawal: ติด W) ซึ่งยังเรียนวิชาอื่นต่อตามปกติ ส่วน "ดรอปเรียนทั้งเทอม" คือการลาพักการศึกษา ซึ่งต้องชำระค่ารักษาสภาพนักศึกษา'
+                },
+                contentHtml: `
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">1. เปรียบเทียบช่วงเวลาการถอนรายวิชา (Drop / Withdrawal)</h2>
+                  <div class="overflow-x-auto my-3">
+                    <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs sm:text-sm">
+                      <thead class="bg-slate-100 text-slate-800">
+                        <tr>
+                          <th class="p-3 border border-slate-200">ช่วงเวลาดำเนินการ</th>
+                          <th class="p-3 border border-slate-200">ผลในใบแสดงผลการเรียน (Transcript)</th>
+                          <th class="p-3 border border-slate-200">การคืนเงินค่าหน่วยกิต</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-200">
+                        <tr>
+                          <td class="p-3 font-semibold text-emerald-700">ภายใน 2 สัปดาห์แรกของภาคเรียน (ช่วงเพิ่ม-ถอน)</td>
+                          <td class="p-3"><strong>ไม่ปรากฏรายวิชา</strong> ในใบแสดงผลการเรียน (ไม่ติด W)</td>
+                          <td class="p-3">คำนวณค่าหน่วยกิตตามวิชาที่ลงจริง</td>
+                        </tr>
+                        <tr class="bg-orange-50/50">
+                          <td class="p-3 font-semibold text-rmuti-700">สัปดาห์ที่ 3 ถึงสัปดาห์ที่ 12 ของภาคเรียน</td>
+                          <td class="p-3">บันทึกอักษร <strong>“W” (Withdrawn)</strong> ไม่นำมาคำนวณเกรดเฉลี่ย</td>
+                          <td class="p-3">ไม่คืนเงินค่าหน่วยกิต</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-rose-700">หลังสัปดาห์ที่ 12 เป็นต้นไป</td>
+                          <td class="p-3">ไม่อนุญาตให้ถอนรายวิชา (ยกเว้นกรณีป่วยหนักมีใบรับรองแพทย์ ให้ยื่นคำร้องกรณีพิเศษ)</td>
+                          <td class="p-3">ไม่คืนเงินค่าหน่วยกิต</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h2 class="text-lg font-bold text-slate-900 mt-6 mb-3">2. ขั้นตอนการถอนรายวิชา (ติด W) และการลาพักการศึกษา (Step-by-Step)</h2>
+                  <ol class="space-y-3 text-xs sm:text-sm">
+                    <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <span class="w-6 h-6 rounded-full bg-rmuti-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">1</span>
+                      <div><strong>ดาวน์โหลดคำร้อง:</strong> ใช้แบบคำร้องขอถอนรายวิชา (วช.05) หรือคำร้องขอลาพักการศึกษา (วช.10) จากระบบ ADEP</div>
+                    </li>
+                    <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <span class="w-6 h-6 rounded-full bg-rmuti-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">2</span>
+                      <div><strong>ขอความเห็นชอบ:</strong> เสนออาจารย์ผู้สอนประจำวิชา อาจารย์ที่ปรึกษา และหัวหน้าสาขาวิชาลงนามเห็นชอบ (กรณีลาพักการศึกษาต้องมีคำรับรองจากผู้ปกครองแนบด้วย)</div>
+                    </li>
+                    <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <span class="w-6 h-6 rounded-full bg-rmuti-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">3</span>
+                      <div><strong>ยื่นต่องานทะเบียนคณะ/สวท.:</strong> ยื่นเอกสารก่อนวันสุดท้ายที่กำหนดในปฏิทินการศึกษา พร้อมตรวจสอบสถานะในระบบ ESS</div>
+                    </li>
+                  </ol>
+                `,
+                downloads: [
+                  { title: 'แบบคำร้องขอเพิ่ม-ถอนรายวิชา ล่าช้า/ติด W (แบบ วช.05)', subtitle: 'ไฟล์ PDF สำหรับนักศึกษา ปวช. / ปวส. / ป.ตรี', type: 'pdf' },
+                  { title: 'แบบคำร้องขอลาพักการศึกษา / รักษาสภาพนักศึกษา (แบบ วช.10)', subtitle: 'ต้องมีลายเซ็นผู้ปกครองและอาจารย์ที่ปรึกษา', type: 'pdf' }
+                ]
+              },
+              {
+                id: '2.2',
+                code: '2.2',
+                title: 'หลักเกณฑ์การเทียบโอนผลการเรียนและยกเว้นรายวิชา',
+                roles: ['hvoc', 'bachelor'],
+                readTime: '4 นาที',
+                summary: 'เงื่อนไขการเทียบโอนรายวิชาสำหรับนักศึกษา ปวส. และ ป.ตรี (เด็กเทียบโอน) เกณฑ์ระดับคะแนนขั้นต่ำ (เกรด C หรือ 2.00) และจำนวนหน่วยกิตสูงสุดที่เทียบโอนได้',
+                keywords: ['เทียบโอน', 'เกรด C', 'เด็กเทียบโอน', 'ยกเว้นรายวิชา', 'ปวส. ต่อ ป.ตรี'],
+                callout: {
+                  type: 'info',
+                  title: 'ยื่นเทียบโอนให้เสร็จสิ้นภายในภาคการศึกษาแรกที่เข้าศึกษา',
+                  text: 'นักศึกษาที่ใช้สิทธิ์เทียบโอนผลการเรียน ต้องยื่นคำร้องขอเทียบโอนพร้อมใบแสดงผลการเรียน (Transcript) เดิมและคำอธิบายรายวิชา ภายในภาคการศึกษาแรกที่เข้าศึกษาเท่านั้น'
+                },
+                contentHtml: `
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">เกณฑ์สำคัญในการเทียบโอนผลการเรียน</h2>
+                  <ul class="list-disc pl-5 space-y-2 text-xs sm:text-sm">
+                    <li><strong>เนื้อหารายวิชา:</strong> รายวิชาที่นำมาขอเทียบโอนต้องมีเนื้อหาสาระครอบคลุมไม่น้อยกว่า <strong>3 ใน 4 (75%)</strong> ของรายวิชาในหลักสูตรใหม่</li>
+                    <li><strong>ระดับผลการเรียนขั้นต่ำ:</strong> รายวิชาที่นำมาเทียบโอนต้องได้เกรดไม่ต่ำกว่า <strong>ระดับ C (หรือแต้มระดับคะแนน 2.00)</strong> ขึ้นไป</li>
+                    <li><strong>จำนวนหน่วยกิตสะสมที่เทียบโอนได้:</strong> เทียบโอนได้รวมกันไม่เกิน <strong>3 ใน 4 ของจำนวนหน่วยกิตรวมตลอดหลักสูตร</strong> และนักศึกษาต้องมีเวลาศึกษาในมหาวิทยาลัยไม่น้อยกว่า 1 ปีการศึกษา</li>
+                    <li><strong>การบันทึกผลใน Transcript:</strong> รายวิชาที่ได้รับอนุมัติเทียบโอนจะบันทึกสัญลักษณ์ <strong>“CS” (Credits from Standardized Test/Transfer)</strong> หรือ <strong>“CE”</strong> โดยไม่นำมาคำนวณเกรดเฉลี่ยสะสม (GPAX)</li>
+                  </ul>
+                `,
+                downloads: [
+                  { title: 'แบบคำร้องขอเทียบโอนผลการเรียน (แบบ วช.08)', subtitle: 'แนบพร้อมใบ รบ. / Transcript ฉบับจริง', type: 'pdf' },
+                  { title: 'ตารางอัตราค่าธรรมเนียมการเทียบโอนรายวิชา', subtitle: 'ระเบียบการเงิน มทร.อีสาน', type: 'pdf' }
+                ]
+              },
+              {
+                id: '2.3',
+                code: '2.3',
+                title: 'การลงทะเบียนศึกษารายวิชาและแผนการศึกษา แผน ก / แผน ข',
+                roles: ['master', 'phd'],
+                readTime: '4 นาที',
+                summary: 'โครงสร้างหลักสูตรระดับบัณฑิตศึกษา (ป.โท แผน ก แบบ ก1/ก2 และแผน ข | ป.เอก แบบ 1.1/1.2 และ 2.1/2.2) การลงทะเบียนหน่วยกิตวิทยานิพนธ์ และการเปลี่ยนแผนการศึกษา',
+                keywords: ['แผน ก', 'แผน ข', 'หน่วยกิตป.โท', 'บัณฑิตศึกษา', 'ดุษฎีนิพนธ์', 'ค้นคว้าอิสระ', 'IS'],
+                callout: {
+                  type: 'info',
+                  title: 'เกณฑ์จำนวนหน่วยกิตลงทะเบียนระดับบัณฑิตศึกษา',
+                  text: 'นักศึกษาภาคปกติลงทะเบียนได้ไม่ต่ำกว่า 6 หน่วยกิต และไม่เกิน 15 หน่วยกิตต่อภาคการศึกษาปกติ หากลงทะเบียนครบทุกรายวิชาแล้วและอยู่ระหว่างทำวิทยานิพนธ์ต่อ ต้องลงทะเบียนรักษาสภาพนักศึกษาทุกภาคเรียน'
+                },
+                contentHtml: `
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">เปรียบเทียบแผนการศึกษาระดับปริญญาโทและปริญญาเอก</h2>
+                  <div class="overflow-x-auto my-3">
+                    <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs sm:text-sm">
+                      <thead class="bg-navy-900 text-white">
+                        <tr>
+                          <th class="p-3 border border-slate-700">ระดับ / แผนการศึกษา</th>
+                          <th class="p-3 border border-slate-700">รายวิชาเรียน (Coursework)</th>
+                          <th class="p-3 border border-slate-700">งานวิจัย (Thesis / IS)</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-200">
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">ป.โท แผน ก แบบ ก 1</td>
+                          <td class="p-3">ไม่ศึกษารายวิชา (อาจเรียนวิชาเสริมไม่นับหน่วยกิตตามที่กรรมการกำหนด)</td>
+                          <td class="p-3">วิทยานิพนธ์ ไม่น้อยกว่า 36 หน่วยกิต</td>
+                        </tr>
+                        <tr class="bg-orange-50/40">
+                          <td class="p-3 font-semibold text-rmuti-700">ป.โท แผน ก แบบ ก 2 (ยอดนิยม)</td>
+                          <td class="p-3">ศึกษารายวิชาไม่น้อยกว่า 24 หน่วยกิต</td>
+                          <td class="p-3">วิทยานิพนธ์ ไม่น้อยกว่า 12 หน่วยกิต</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">ป.โท แผน ข (การค้นคว้าอิสระ)</td>
+                          <td class="p-3">ศึกษารายวิชาไม่น้อยกว่า 30 หน่วยกิต</td>
+                          <td class="p-3">การค้นคว้าอิสระ (IS) 6 หน่วยกิต + สอบประมวลความรู้ (CE)</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">ป.เอก แบบ 1 (เน้นวิจัยล้วน)</td>
+                          <td class="p-3">ไม่ศึกษารายวิชา</td>
+                          <td class="p-3">ดุษฎีนิพนธ์ 48 หน่วยกิต (แบบ 1.1) หรือ 72 หน่วยกิต (แบบ 1.2)</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">ป.เอก แบบ 2 (ศึกษารายวิชา + วิจัย)</td>
+                          <td class="p-3">ศึกษารายวิชา 12–24 หน่วยกิต</td>
+                          <td class="p-3">ดุษฎีนิพนธ์ไม่น้อยกว่า 36–48 หน่วยกิต</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                `,
+                downloads: [
+                  { title: 'ข้อบังคับ มทร.อีสาน ว่าด้วยการศึกษาระดับบัณฑิตศึกษา', subtitle: 'ฉบับสมบูรณ์ สำหรับนักศึกษา ป.โท และ ป.เอก', type: 'pdf' },
+                  { title: 'แบบคำร้องขอเปลี่ยนแผนการศึกษา (แบบ บศ.04)', subtitle: 'เปลี่ยนระหว่าง แผน ก และ แผน ข', type: 'pdf' }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'cat-3',
+            number: '3',
+            title: 'การวัดผลและเกณฑ์สำเร็จการศึกษา',
+            topics: [
+              {
+                id: '3.1',
+                code: '3.1',
+                title: 'เกณฑ์เวลาเรียน 80% การแก้คะแนน ขร./มส. และการฝึกงาน',
+                roles: ['voc', 'hvoc'],
+                readTime: '4 นาที',
+                summary: 'ระเบียบการเข้าเรียนขั้นต่ำร้อยละ 80 สำหรับนักศึกษา ปวช. และ ปวส. ความหมายของสัญลักษณ์ ขร. / มส. / มท. ขั้นตอนการยื่นคำร้องขอแก้ผลการเรียน และเกณฑ์การออกฝึกงาน',
+                keywords: ['ขาดเรียน', 'ติด ขร', 'ติด มส', 'ฝึกงาน', 'เกรดเฉลี่ย', 'เวลาเรียน 80%'],
+                callout: {
+                  type: 'danger',
+                  title: 'กฎเหล็ก ปวช. / ปวส.: เวลาเรียนต้องไม่ต่ำกว่า 80% ของเวลาเรียนทั้งหมด',
+                  text: 'หากนักศึกษาขาดเรียนเกิน 20% ในรายวิชาใด จะหมดสิทธิ์สอบปลายภาคในรายวิชานั้นทันที (ติด ขร. / มส.) และต้องลงทะเบียนเรียนซ้ำในภาคการศึกษาถัดไป'
+                },
+                contentHtml: `
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">ความหมายสัญลักษณ์ผลการเรียนพิเศษและการแก้ไข (ระดับ ปวช. และ ปวส.)</h2>
+                  <div class="overflow-x-auto my-3">
+                    <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs sm:text-sm">
+                      <thead class="bg-slate-100 text-slate-800">
+                        <tr>
+                          <th class="p-3 border border-slate-200">สัญลักษณ์</th>
+                          <th class="p-3 border border-slate-200">ความหมาย</th>
+                          <th class="p-3 border border-slate-200">วิธีดำเนินการแก้ไข</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-200">
+                        <tr>
+                          <td class="p-3 font-bold text-rose-600">ขร. / มส.</td>
+                          <td class="p-3">ขาดเรียน / ไม่มีสิทธิ์สอบ เนื่องจากเวลาเรียนต่ำกว่า 80%</td>
+                          <td class="p-3">ต้องลงทะเบียนเรียนซ้ำในรายวิชานั้นใหม่</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-bold text-amber-600">มท. (หรือ I)</td>
+                          <td class="p-3">การวัดผลยังไม่สมบูรณ์ (ส่งชิ้นงานไม่ครบ หรือขาดสอบโดยมีเหตุสุดวิสัย)</td>
+                          <td class="p-3">ติดต่ออาจารย์ผู้สอนเพื่อสอบ/ส่งงานให้เสร็จภายใน <strong>30 วันแรกของภาคเรียนถัดไป</strong> มิฉะนั้นจะเปลี่ยนเป็นเกรด F (0)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h2 class="text-lg font-bold text-slate-900 mt-5 mb-2">เกณฑ์การออกฝึกงานและสำเร็จการศึกษา</h2>
+                  <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
+                    <li>ต้องผ่านการฝึกงานในสถานประกอบการตามจำนวนชั่วโมงที่หลักสูตรกำหนด (ปวช. ไม่น้อยกว่า 320 ชม. / ปวส. ไม่น้อยกว่า 320–640 ชม. ตามประเภทวิชา)</li>
+                    <li>ต้องได้แต้มระดับคะแนนเฉลี่ยสะสม (GPAX) ตลอดหลักสูตร <strong>ไม่ต่ำกว่า 2.00</strong></li>
+                    <li>ผ่านกิจกรรมหน้าเสาธงและกิจกรรมชมรมวิชาชีพตามเกณฑ์สถานศึกษา</li>
+                  </ul>
+                `,
+                downloads: [
+                  { title: 'แบบคำร้องขอแก้ผลการเรียน มท. / I (แบบ วช.06)', subtitle: 'ยื่นภายใน 30 วันแรกของภาคการศึกษาถัดไป', type: 'pdf' },
+                  { title: 'คู่มือการออกฝึกงานและสหกิจศึกษา ระดับ ปวช./ปวส.', subtitle: 'งานอาชีวศึกษา มทร.อีสาน', type: 'pdf' }
+                ]
+              },
+              {
+                id: '3.2',
+                code: '3.2',
+                title: 'เกณฑ์เกรดเฉลี่ยสะสม (GPAX) สถานะรอพินิจ (ติดโปร) และการพ้นสภาพนักศึกษา',
+                roles: ['bachelor'],
+                readTime: '5 นาที',
+                summary: 'ตารางเกณฑ์การวัดสภาพนักศึกษาปริญญาตรี สถานะปกติ (Normal) สถานะรอพินิจ (Probation / ติดโปร) และเงื่อนไขการพ้นสภาพนักศึกษา (Retire / รีไทร์) ที่นักศึกษาต้องระวัง',
+                keywords: ['เกรดเฉลี่ย', 'ติดโปร', 'รีไทร์', 'พ้นสภาพ', 'GPAX 2.00', 'โปรต่ำ', 'โปรสูง'],
+                callout: {
+                  type: 'danger',
+                  title: 'ระวัง! เกรดเฉลี่ยสะสม (GPAX) ต่ำกว่า 1.50 เมื่อสิ้นปีการศึกษา = พ้นสภาพ (รีไทร์) ทันที',
+                  text: 'การจำแนกสภาพนักศึกษาจะพิจารณาเมื่อสิ้นภาคการศึกษาที่ 2 ของทุกปีการศึกษา (หลังประกาศเกรดเทอม 2) นักศึกษาที่ได้ GPAX ระหว่าง 1.50 - 1.99 จะอยู่ในสถานะ "รอพินิจ (ติดโปร)"'
+                },
+                contentHtml: `
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">ตารางเกณฑ์การพ้นสภาพนักศึกษา (Retire) และการติดโปร (Probation) ระดับปริญญาตรี</h2>
+                  <div class="overflow-x-auto my-3">
+                    <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs sm:text-sm">
+                      <thead class="bg-navy-900 text-white">
+                        <tr>
+                          <th class="p-3 border border-slate-700">ช่วงเวลาประเมินสภาพ</th>
+                          <th class="p-3 border border-slate-700">เกรดเฉลี่ยสะสม (GPAX)</th>
+                          <th class="p-3 border border-slate-700">สถานะนักศึกษาและการดำเนินการ</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-200">
+                        <tr class="bg-rose-50/70">
+                          <td class="p-3 font-semibold text-rose-900">เมื่อสิ้นภาคเรียนที่ 2 ของชั้นปีที่ 1</td>
+                          <td class="p-3 font-bold text-rose-600">ต่ำกว่า 1.50</td>
+                          <td class="p-3 font-semibold text-rose-700">พ้นสภาพนักศึกษา (รีไทร์) ทันที</td>
+                        </tr>
+                        <tr class="bg-amber-50/70">
+                          <td class="p-3 font-semibold text-amber-900">ผู้มีสถานะรอพินิจ (ติดโปร) ครั้งที่ 1–2</td>
+                          <td class="p-3 font-bold text-amber-700">1.50 – 1.74 (โปรต่ำ)</td>
+                          <td class="p-3">ต้องทำ GPAX ให้ถึง 1.75 ภายในปีการศึกษาถัดไป และจำกัดหน่วยกิตลงทะเบียนไม่เกิน 16 หน่วยกิต/เทอม</td>
+                        </tr>
+                        <tr class="bg-amber-50/40">
+                          <td class="p-3 font-semibold text-amber-900">ผู้มีสถานะรอพินิจ (ติดโปร) ต่อเนื่อง</td>
+                          <td class="p-3 font-bold text-amber-700">1.75 – 1.99 (โปรสูง)</td>
+                          <td class="p-3">ต้องทำ GPAX ให้ถึง <strong>2.00</strong> ภายในระยะเวลาที่กำหนด (ติดโปรติดต่อกันเกิน 4 ครั้ง จะพ้นสภาพนักศึกษา)</td>
+                        </tr>
+                        <tr class="bg-emerald-50/60">
+                          <td class="p-3 font-semibold text-emerald-900">ทุกชั้นปี และเมื่อสำเร็จการศึกษา</td>
+                          <td class="p-3 font-bold text-emerald-700">2.00 ขึ้นไป</td>
+                          <td class="p-3 font-semibold text-emerald-800">สถานะปกติ (Normal) และมีสิทธิ์ขอสำเร็จการศึกษาเมื่อครบหน่วยกิต</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <h2 class="text-lg font-bold text-slate-900 mt-5 mb-2">เกณฑ์การได้รับปริญญาบัตรเกียรตินิยม</h2>
+                  <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
+                    <li><strong>เกียรตินิยมอันดับ 1:</strong> GPAX ตลอดหลักสูตรตั้งแต่ <strong>3.50 ขึ้นไป</strong> ไม่เคยได้เกรด F หรือ U ในรายวิชาใด และไม่เคยเรียนซ้ำเพื่อรีเกรด</li>
+                    <li><strong>เกียรตินิยมอันดับ 2:</strong> GPAX ตลอดหลักสูตรตั้งแต่ <strong>3.25 – 3.49</strong> ไม่เคยได้เกรด F หรือ U และสำเร็จการศึกษาภายในเวลาที่หลักสูตรกำหนด</li>
+                  </ul>
+                `,
+                downloads: [
+                  { title: 'ข้อบังคับ มทร.อีสาน ว่าด้วยการศึกษาระดับปริญญาตรี', subtitle: 'หมวดการวัดผล สถานะรอพินิจ และการพ้นสภาพนักศึกษา', type: 'pdf' },
+                  { title: 'โปรแกรมคำนวณเกรดเฉลี่ยสะสม (GPAX Simulator)', subtitle: 'ระบบบริการการศึกษา ESS RMUTI', type: 'link' }
+                ]
+              },
+              {
+                id: '3.3',
+                code: '3.3',
+                title: 'ขั้นตอนการเสนอหัวข้อวิทยานิพนธ์/ดุษฎีนิพนธ์ การสอบ QE และเกณฑ์การตีพิมพ์เผยแพร่',
+                roles: ['master', 'phd'],
+                readTime: '5 นาที',
+                summary: 'ขั้นตอนการแต่งตั้งอาจารย์ที่ปรึกษาวิทยานิพนธ์ การสอบวัดคุณสมบัติ (Qualifying Examination: QE) เกณฑ์ภาษาอังกฤษ และเกณฑ์การตีพิมพ์ผลงานวิจัยในฐานข้อมูล TCI / Scopus เพื่อขอสำเร็จการศึกษา',
+                keywords: ['วิทยานิพนธ์', 'ตีพิมพ์', 'TCI', 'Scopus', 'สอบ QE', 'เกรดเฉลี่ย 3.00', 'ดุษฎีนิพนธ์'],
+                callout: {
+                  type: 'warning',
+                  title: 'เงื่อนไขสำคัญก่อนยื่นขอสำเร็จการศึกษาระดับ ป.โท และ ป.เอก',
+                  text: 'นักศึกษาบัณฑิตศึกษาต้องมี GPAX รายวิชาไม่ต่ำกว่า 3.00 ผ่านเกณฑ์มาตรฐานภาษาอังกฤษของมหาวิทยาลัย และมีผลงานตีพิมพ์เผยแพร่ที่ระบุสังกัด มทร.อีสาน ตามเกณฑ์ที่กำหนด'
+                },
+                contentHtml: `
+                  <h2 class="text-lg font-bold text-slate-900 mb-3">1. ขั้นตอนการทำวิทยานิพนธ์ / ดุษฎีนิพนธ์ (5 ขั้นตอนหลัก)</h2>
+                  <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5 my-3 text-xs">
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <div class="font-bold text-rmuti-600 mb-1">ขั้นที่ 1</div>
+                      <div class="font-bold text-slate-900">แต่งตั้งที่ปรึกษา</div>
+                      <p class="text-slate-500 mt-1">ยื่นแบบ บศ.01 แต่งตั้งอาจารย์ที่ปรึกษาหลัก</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <div class="font-bold text-rmuti-600 mb-1">ขั้นที่ 2</div>
+                      <div class="font-bold text-slate-900">สอบ QE (ป.เอก)</div>
+                      <p class="text-slate-500 mt-1">สอบวัดคุณสมบัติให้ผ่านก่อนสอบโครงร่างฯ</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <div class="font-bold text-rmuti-600 mb-1">ขั้นที่ 3</div>
+                      <div class="font-bold text-slate-900">สอบโครงร่างฯ</div>
+                      <p class="text-slate-500 mt-1">สอบ Proposal และขอรับรองจริยธรรมการวิจัยในมนุษย์ (ถ้ามี)</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <div class="font-bold text-rmuti-600 mb-1">ขั้นที่ 4</div>
+                      <div class="font-bold text-slate-900">สอบป้องกันจบ</div>
+                      <p class="text-slate-500 mt-1">หลังได้รับอนุมัติโครงร่างฯ ไม่น้อยกว่า 60–90 วัน</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <div class="font-bold text-rmuti-600 mb-1">ขั้นที่ 5</div>
+                      <div class="font-bold text-slate-900">ตีพิมพ์ & ส่งเล่ม</div>
+                      <p class="text-slate-500 mt-1">ตรวจอักขระวิสูจน์/Turnitin และส่งหลักฐานการตีพิมพ์</p>
+                    </div>
+                  </div>
+
+                  <h2 class="text-lg font-bold text-slate-900 mt-5 mb-2">2. ตารางสรุปเกณฑ์การตีพิมพ์เผยแพร่ผลงานเพื่อสำเร็จการศึกษา</h2>
+                  <div class="overflow-x-auto my-3">
+                    <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs sm:text-sm">
+                      <thead class="bg-slate-100 text-slate-800">
+                        <tr>
+                          <th class="p-3 border border-slate-200">ระดับและแผนการศึกษา</th>
+                          <th class="p-3 border border-slate-200">เกณฑ์การตีพิมพ์เผยแพร่ขั้นต่ำ</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-200">
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">ป.โท แผน ก (วิทยานิพนธ์)</td>
+                          <td class="p-3">ตีพิมพ์ในวารสารระดับชาติที่อยู่ในฐานข้อมูล <strong>TCI กลุ่ม 1 หรือ กลุ่ม 2</strong> หรือนำเสนอในงานประชุมวิชาการระดับชาติ/นานาชาติที่มีรายงานสืบเนื่อง (Proceedings) ฉบับเต็ม</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">ป.โท แผน ข (การค้นคว้าอิสระ)</td>
+                          <td class="p-3">เผยแพร่ในแหล่งเผยแพร่ทางวิชาการ หรือนำเสนอในงานประชุมวิชาการตามเกณฑ์ที่หลักสูตรกำหนด</td>
+                        </tr>
+                        <tr class="bg-orange-50/50">
+                          <td class="p-3 font-semibold text-rmuti-700">ป.เอก แบบ 1 และ แบบ 2</td>
+                          <td class="p-3">ตีพิมพ์ในวารสารวิชาการระดับนานาชาติที่อยู่ในฐานข้อมูล <strong>Scopus, Web of Science (ISI) หรือ IEEE</strong> อย่างน้อย 1–2 เรื่องตามแผนการศึกษา</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                `,
+                downloads: [
+                  { title: 'คู่มือการพิมพ์วิทยานิพนธ์และดุษฎีนิพนธ์ มทร.อีสาน (Template)', subtitle: 'ไฟล์ PDF และรูปแบบมาตรฐาน Word/LaTeX', type: 'pdf' },
+                  { title: 'รวมแบบฟอร์มบัณฑิตศึกษา (บศ.01 – บศ.15)', subtitle: 'งานบัณฑิตศึกษา สำนักส่งเสริมวิชาการและงานทะเบียน', type: 'pdf' }
+                ]
+              }
+            ]
+          },
+          {
+            id: 'cat-4',
+            number: '4',
+            title: 'วินัย เครื่องแบบ และกิจกรรมนักศึกษา',
+            topics: [
+              {
+                id: '4.1',
+                code: '4.1',
+                title: 'ระเบียบการแต่งกายเครื่องแบบปกติและชุดปฏิบัติการโรงฝึกงาน/เสื้อช็อป',
+                roles: ['voc', 'hvoc'],
+                readTime: '3 นาที',
+                summary: 'มาตรฐานเครื่องแบบนักศึกษา ปวช. และ ปวส. ระเบียบการสวมเสื้อปฏิบัติการ (เสื้อช็อป) สีประจำสาขา ความปลอดภัยในโรงฝึกงาน/ห้องปฏิบัติการ และระเบียบทรงผม',
+                keywords: ['แต่งกาย', 'เสื้อช็อป', 'ทรงผม', 'โรงฝึกงาน', 'รองเท้าเซฟตี้', 'เครื่องแบบ ปวช'],
+                callout: {
+                  type: 'warning',
+                  title: 'ข้อบังคับความปลอดภัยเมื่อเข้าเรียนในโรงฝึกงานและห้องปฏิบัติการ',
+                  text: 'เมื่อเข้าวิชาปฏิบัติการ นักศึกษา ปวช. และ ปวส. ต้องสวมเสื้อปฏิบัติการ (เสื้อช็อป) ที่ถูกต้องตามระเบียบของคณะ ติดป้ายชื่อ-รหัสนักศึกษา และสวมรองเท้าหุ้มส้น/รองเท้าเซฟตี้ทุกครั้ง ห้ามสวมรองเท้าแตะโดยเด็ดขาด'
+                },
+                contentHtml: `
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">ระเบียบเครื่องแบบนักศึกษา ระดับ ปวช. และ ปวส.</h2>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-3 text-xs sm:text-sm">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                      <h3 class="font-bold text-slate-900 mb-2">1. เครื่องแบบเรียนภาคทฤษฎี (ชุดปกติ)</h3>
+                      <ul class="list-disc pl-5 space-y-1.5 text-slate-600">
+                        <li><strong>นักศึกษาชาย:</strong> เสื้อเชิ้ตสีขาวแขนสั้นหรือแขนยาว ปักตรามหาวิทยาลัยที่อกซ้าย กางเกงขายาวสีดำหรือสีกรมท่าเข้ม รองเท้าหนังหุ้มส้นสีดำ ถุงเท้าสีดำ</li>
+                        <li><strong>นักศึกษาหญิง:</strong> เสื้อเชิ้ตสีขาวถูกระเบียบ ติดเข็มกลัดตรามหาวิทยาลัยที่อกซ้าย กระโปรงทรงสุภาพสีดำหรือสีกรมท่าเข้ม ความยาวคลุมเข่า รองเท้าหุ้มส้นสีดำ</li>
+                      </ul>
+                    </div>
+                    <div class="p-4 rounded-xl bg-orange-50/50 border border-orange-200">
+                      <h3 class="font-bold text-rmuti-800 mb-2">2. ชุดปฏิบัติการโรงฝึกงาน (เสื้อช็อป)</h3>
+                      <ul class="list-disc pl-5 space-y-1.5 text-slate-700">
+                        <li>สวมเสื้อช็อปแขนสั้นหรือแขนยาวตามสีและแบบมาตรฐานที่คณะกำหนดเท่านั้น (ห้ามดัดแปลงทรงหรือปักลวดลายนอกเหนือระเบียบ)</li>
+                        <li>สวมทับเสื้อยืดคอกลมสีขาวหรือเสื้อนักศึกษา กางเกงขายาวสุภาพสีเข้ม และรองเท้าหุ้มส้นที่ปลอดภัยต่อการปฏิบัติงานเครื่องจักร</li>
+                      </ul>
+                    </div>
+                  </div>
+                `,
+                downloads: [
+                  { title: 'ระเบียบ มทร.อีสาน ว่าด้วยเครื่องแบบและชุดปฏิบัติการ ปวช./ปวส.', subtitle: 'พร้อมภาพตัวอย่างการติดเครื่องหมายที่ถูกต้อง', type: 'pdf' }
+                ]
+              },
+              {
+                id: '4.2',
+                code: '4.2',
+                title: 'ระเบียบเครื่องแบบนักศึกษา ชุดพิธีการ และเกณฑ์ชั่วโมงกิจกรรมนักศึกษา',
+                roles: ['bachelor'],
+                readTime: '4 นาที',
+                summary: 'การแต่งกายชุดนักศึกษาปกติและชุดพิธีการ (เนกไท/เข็มกลัด/หัวเข็มขัด มทร.อีสาน) และเกณฑ์การสะสมชั่วโมงกิจกรรมนักศึกษา (Activity Transcript) เพื่อยื่นขอสำเร็จการศึกษา',
+                keywords: ['แต่งกาย', 'เข็มกลัด', 'เนกไท', 'ชั่วโมงกิจกรรม', 'กิจกรรมบังคับ', 'ชุดพิธีการ'],
+                callout: {
+                  type: 'info',
+                  title: 'ต้องผ่านเกณฑ์ชั่วโมงกิจกรรมนักศึกษา จึงจะยื่นขอสำเร็จการศึกษาได้',
+                  text: 'นักศึกษาปริญญาตรีต้องเข้าร่วมกิจกรรมเสริมหลักสูตรและสะสมหน่วยชั่วโมงกิจกรรมให้ครบตามเกณฑ์ของกองพัฒนานักศึกษา (ไม่น้อยกว่า 100 ชั่วโมง ตลอดหลักสูตร แบ่งเป็นกิจกรรมบังคับและกิจกรรมเลือก)'
+                },
+                contentHtml: `
+                  <h2 class="text-lg font-bold text-slate-900 mb-2">1. เครื่องแบบนักศึกษาปกติและชุดพิธีการ (ระดับปริญญาตรี)</h2>
+                  <ul class="list-disc pl-5 space-y-2 text-xs sm:text-sm">
+                    <li><strong>นักศึกษาชาย:</strong> เสื้อเชิ้ตสีขาวแขนยาว ผูกเนกไทสีแสด/สีกรมท่าที่มีตรามหาวิทยาลัย กางเกงขายาวสีดำหรือสีกรมท่าเข้ม เข็มขัดหนังสีดำหัวเข็มขัดตรามหาวิทยาลัย รองเท้าหนังหุ้มส้นสีดำ</li>
+                    <li><strong>นักศึกษาหญิง:</strong> เสื้อเชิ้ตสีขาวแขนสั้น ติดกระดุมโลหะตรามหาวิทยาลัยและเข็มกลัดตรามหาวิทยาลัยที่อกด้านซ้าย กระโปรงสีดำหรือสีกรมท่าเข้ม เข็มขัดหนังหัวตรามหาวิทยาลัย รองเท้าหุ้มส้นสีดำ</li>
+                  </ul>
+
+                  <h2 class="text-lg font-bold text-slate-900 mt-5 mb-2">2. โครงสร้างเกณฑ์ชั่วโมงกิจกรรมนักศึกษา (Activity Transcript)</h2>
+                  <div class="overflow-x-auto my-3">
+                    <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-xs sm:text-sm">
+                      <thead class="bg-slate-100 text-slate-800">
+                        <tr>
+                          <th class="p-3 border border-slate-200">ประเภทกิจกรรม</th>
+                          <th class="p-3 border border-slate-200">รายละเอียด</th>
+                          <th class="p-3 border border-slate-200">เกณฑ์ขั้นต่ำ (นักศึกษา 4 ปี / เทียบโอน)</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-200">
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">1. กิจกรรมบังคับของมหาวิทยาลัย</td>
+                          <td class="p-3">ปฐมนิเทศนักศึกษาใหม่, พิธีไหว้ครู, กิจกรรมวันสำคัญของมหาวิทยาลัย</td>
+                          <td class="p-3">ไม่น้อยกว่า 30 ชั่วโมง (เทียบโอน 18 ชั่วโมง)</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">2. กิจกรรมบังคับเลือกของคณะ</td>
+                          <td class="p-3">กิจกรรมวิชาการ กีฬา และทำนุบำรุงศิลปวัฒนธรรมที่คณะจัดขึ้น</td>
+                          <td class="p-3">ไม่น้อยกว่า 30 ชั่วโมง (เทียบโอน 18 ชั่วโมง)</td>
+                        </tr>
+                        <tr>
+                          <td class="p-3 font-semibold text-slate-900">3. กิจกรรมเลือกเสรี / จิตอาสา</td>
+                          <td class="p-3">ชมรมนักศึกษา จิตอาสาบำเพ็ญประโยชน์ และพัฒนาทักษะ (TQF 5 ด้าน)</td>
+                          <td class="p-3">ไม่น้อยกว่า 40 ชั่วโมง (เทียบโอน 24 ชั่วโมง)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                `,
+                downloads: [
+                  { title: 'ประกาศ มทร.อีสาน เรื่องเกณฑ์การเข้าร่วมกิจกรรมนักศึกษา', subtitle: 'กองพัฒนานักศึกษา มทร.อีสาน', type: 'pdf' },
+                  { title: 'ระบบตรวจสอบชั่วโมงกิจกรรมนักศึกษาออนไลน์ (Activity Transcript)', subtitle: 'act.rmuti.ac.th', type: 'link' }
+                ]
+              }
+            ]
+          }
+        ],
+
+        // Lifecycle Initialization
+        initApp() {
+          const savedLevel = localStorage.getItem('rmuti_student_level');
+          const validLevels = this.educationLevels.map(l => l.id);
+
+          if (savedLevel && validLevels.includes(savedLevel)) {
+            this.currentLevel = savedLevel;
+          } else {
+            // แสดง Smart Onboarding Modal เมื่อเข้าใช้งานครั้งแรก
+            this.onboardingModalOpen = true;
+          }
+
+          this.ensureValidCurrentTopic();
+          this.refreshIcons();
+
+          // Watchers เพื่ออัปเดต Lucide Icons ทุกครั้งที่ DOM เปลี่ยนแปลง
+          this.$watch('currentLevel', () => this.refreshIcons());
+          this.$watch('currentTopicId', () => this.refreshIcons());
+          this.$watch('searchQuery', () => this.refreshIcons());
+          this.$watch('mobileMenuOpen', () => this.refreshIcons());
+          this.$watch('onboardingModalOpen', () => this.refreshIcons());
+          this.$watch('ebookModalOpen', () => this.refreshIcons());
+        },
+
+        refreshIcons() {
+          this.$nextTick(() => {
+            if (window.lucide) {
+              window.lucide.createIcons();
+            }
+          });
+        },
+
+        // Computed: ข้อมูลระดับการศึกษาปัจจุบัน
+        get currentLevelObj() {
+          return this.educationLevels.find(l => l.id === this.currentLevel) || this.educationLevels[2];
+        },
+
+        // Computed: กรองหมวดหมู่และหัวข้อย่อยตามระดับการศึกษาปัจจุบัน (all + currentLevel)
+        get filteredCategories() {
+          return this.rawCategories
+            .map(cat => {
+              const filteredTopics = cat.topics.filter(
+                t => t.roles.includes('all') || t.roles.includes(this.currentLevel)
+              );
+              return {
+                ...cat,
+                topics: filteredTopics
+              };
+            })
+            .filter(cat => cat.topics.length > 0);
+        },
+
+        // Computed: รายการหัวข้อที่ผ่านการกรองแบบเรียงลำดับ (Flat List)
+        get flatFilteredTopics() {
+          const list = [];
+          this.filteredCategories.forEach(cat => {
+            cat.topics.forEach(t => {
+              list.push({
+                ...t,
+                categoryId: cat.id,
+                categoryNumber: cat.number,
+                categoryTitle: cat.title
+              });
+            });
+          });
+          return list;
+        },
+
+        get totalFilteredTopicsCount() {
+          return this.flatFilteredTopics.length;
+        },
+
+        get hiddenTopicsCount() {
+          const totalAll = this.rawCategories.reduce((acc, c) => acc + c.topics.length, 0);
+          return totalAll - this.totalFilteredTopicsCount;
+        },
+
+        // Computed: หัวข้อที่กำลังเปิดอ่านอยู่
+        get currentTopic() {
+          return this.flatFilteredTopics.find(t => t.id === this.currentTopicId) || this.flatFilteredTopics[0] || null;
+        },
+
+        // Computed: หมวดหมู่ของหัวข้อที่กำลังเปิดอ่านอยู่
+        get currentCategory() {
+          if (!this.currentTopic) return null;
+          return this.filteredCategories.find(c => c.id === this.currentTopic.categoryId) || null;
+        },
+
+        // Computed: หัวข้อก่อนหน้า (Previous) และหัวข้อถัดไป (Next)
+        get prevTopic() {
+          const idx = this.flatFilteredTopics.findIndex(t => t.id === this.currentTopicId);
+          return idx > 0 ? this.flatFilteredTopics[idx - 1] : null;
+        },
+
+        get nextTopic() {
+          const idx = this.flatFilteredTopics.findIndex(t => t.id === this.currentTopicId);
+          return idx >= 0 && idx < this.flatFilteredTopics.length - 1
+            ? this.flatFilteredTopics[idx + 1]
+            : null;
+        },
+
+        // Computed: สถานะกำลังค้นหาและรายการผลการค้นหา
+        get isSearching() {
+          return this.searchQuery.trim().length > 0;
+        },
+
+        get searchResults() {
+          const q = this.searchQuery.trim().toLowerCase();
+          if (!q) return [];
+
+          return this.flatFilteredTopics.filter(topic => {
+            const inTitle = (topic.code + ' ' + topic.title).toLowerCase().includes(q);
+            const inSummary = topic.summary.toLowerCase().includes(q);
+            const inKeywords = topic.keywords.some(k => k.toLowerCase().includes(q));
+            const plainContent = topic.contentHtml.replace(/<[^>]+>/g, ' ').toLowerCase();
+            const inContent = plainContent.includes(q);
+            const inCallout = topic.callout
+              ? (topic.callout.title + ' ' + topic.callout.text).toLowerCase().includes(q)
+              : false;
+            return inTitle || inSummary || inKeywords || inContent || inCallout;
+          });
+        },
+
+        // Actions
+        selectEducationLevel(levelId) {
+          this.currentLevel = levelId;
+          localStorage.setItem('rmuti_student_level', levelId);
+          this.onboardingModalOpen = false;
+          this.ensureValidCurrentTopic();
+          this.showToast(
+            'เปลี่ยนระดับการศึกษาสำเร็จ',
+            'กำลังแสดงข้อมูลส่วนกลาง + เฉพาะระดับ ' + this.currentLevelObj.name
+          );
+        },
+
+        ensureValidCurrentTopic() {
+          const exists = this.flatFilteredTopics.some(t => t.id === this.currentTopicId);
+          if (!exists && this.flatFilteredTopics.length > 0) {
+            this.currentTopicId = this.flatFilteredTopics[0].id;
+          }
+        },
+
+        selectFirstAvailableTopic() {
+          if (this.flatFilteredTopics.length > 0) {
+            this.currentTopicId = this.flatFilteredTopics[0].id;
+          }
+        },
+
+        toggleCategory(catId) {
+          if (this.openCategories.includes(catId)) {
+            this.openCategories = this.openCategories.filter(id => id !== catId);
+          } else {
+            this.openCategories.push(catId);
+          }
+          this.refreshIcons();
+        },
+
+        selectTopic(topicId, fromMobile = false) {
+          this.currentTopicId = topicId;
+          this.searchQuery = '';
+          this.activeHighlightTerm = '';
+          if (fromMobile) {
+            this.mobileMenuOpen = false;
+          }
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+
+        openTopicFromSearch(topicId) {
+          const term = this.searchQuery.trim();
+          this.currentTopicId = topicId;
+          this.activeHighlightTerm = term;
+          this.searchQuery = '';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+
+        triggerQuickSearch(keyword) {
+          this.searchQuery = keyword;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+
+        onSearchInput() {
+          this.activeHighlightTerm = '';
+        },
+
+        clearSearch() {
+          this.searchQuery = '';
+        },
+
+        onYearChange() {
+          this.showToast(
+            'สลับเป็นคู่มือนักศึกษา ปีการศึกษา ' + this.academicYear,
+            'อัปเดตข้อมูลอ้างอิงตามโครงสร้าง sg/student-guide-' + this.academicYear
+          );
+        },
+
+        triggerDownloadToast(doc) {
+          this.showToast(
+            doc.type === 'pdf' ? 'กำลังดาวน์โหลดเอกสาร PDF' : 'กำลังเปิดลิงก์หน่วยงาน',
+            doc.title
+          );
+        },
+
+        showToast(title, message) {
+          if (this.toast.timeout) clearTimeout(this.toast.timeout);
+          this.toast.title = title;
+          this.toast.message = message;
+          this.toast.visible = true;
+          this.refreshIcons();
+          this.toast.timeout = setTimeout(() => {
+            this.toast.visible = false;
+          }, 3500);
+        },
+
+        // Helper: ป้าย Badge แสดงสถานะ [ส่วนกลาง] หรือ [เฉพาะ ...]
+        getTopicBadgeText(topic) {
+          if (!topic) return '';
+          if (topic.roles.includes('all')) {
+            return '[ส่วนกลาง]';
+          }
+          return '[เฉพาะ ' + this.currentLevelObj.shortName + ']';
+        },
+
+        // Helper: ไฮไลต์คำค้นหาด้วย <mark class="search-highlight"> สำหรับข้อความธรรมดา
+        highlightText(text, query) {
+          if (!text) return '';
+          const q = (query || '').trim();
+          if (!q) return text;
+          const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`(${escaped})`, 'gi');
+          return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+        },
+
+        // Helper: ไฮไลต์คำค้นหาใน HTML โดยไม่ทำลาย HTML Tags
+        highlightHtmlContent(html, query) {
+          if (!html) return '';
+          const q = (query || '').trim();
+          if (!q) return html;
+          const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`(${escaped})(?![^<]*>)`, 'gi');
+          return html.replace(regex, '<mark class="search-highlight">$1</mark>');
+        }
+      };
+    }
+  </script>
+</body>
+</html>
+
