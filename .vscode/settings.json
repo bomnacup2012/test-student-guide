@@ -1,0 +1,12 @@
+{
+  "files.eol": "\n",
+  "files.encoding": "utf8",
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "prettier.endOfLine": "lf",
+  "html.format.contentUnformatted": "pre,code,textarea,script,style"
+}
