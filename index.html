@@ -65,7 +65,7 @@
             }
             body {
                 font-family: "Prompt", sans-serif;
-                background-color: #f8fafc;
+                background-color: #f1f5f9;
                 color: #0f172a;
             }
             .content-prose {
@@ -85,6 +85,25 @@
                 border-radius: 4px;
                 font-weight: 600;
                 box-shadow: 0 0 0 1px #fde047;
+            }
+            /* Realistic E-Book Stacked Paper Effect */
+            .ebook-sheet {
+                position: relative;
+                background: #ffffff;
+                box-shadow:
+                    0 20px 45px -15px rgba(15, 23, 42, 0.14),
+                    5px 5px 0 -1px #ffffff,
+                    5px 5px 0 0 #cbd5e1,
+                    10px 10px 0 -1px #f8fafc,
+                    10px 10px 0 0 #cbd5e1;
+            }
+            .ebook-spine {
+                background: linear-gradient(
+                    90deg,
+                    #0f172a 0%,
+                    #334155 45%,
+                    #0f172a 100%
+                );
             }
             /* Custom Scrollbar */
             ::-webkit-scrollbar {
@@ -109,7 +128,9 @@
         x-init="initApp()"
         @keydown.window.ctrl.k.prevent="$refs.searchInput.focus()"
         @keydown.window.slash.prevent="if ($event.target.tagName !== 'INPUT') $refs.searchInput.focus()"
-        class="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-800 antialiased selection:bg-rmuti-500 selection:text-white"
+        @keydown.window.arrow-left="if ($event.target.tagName !== 'INPUT' && $event.target.tagName !== 'SELECT' && !isSearching) flipPrevPage()"
+        @keydown.window.arrow-right="if ($event.target.tagName !== 'INPUT' && $event.target.tagName !== 'SELECT' && !isSearching) flipNextPage()"
+        class="min-h-screen flex flex-col bg-[#F1F5F9] text-slate-800 antialiased selection:bg-rmuti-500 selection:text-white"
     >
         <!-- ===================================================================== -->
         <!-- 1. TOP NAVIGATION BAR (Sticky Header)                                 -->
@@ -531,50 +552,60 @@
             </div>
 
             <!-- ------------------------------------------------------------------- -->
-            <!-- 3B. DESKTOP STICKY LEFT SIDEBAR (Width ~280px / w-72)               -->
+            <!-- 3B. DESKTOP STICKY LEFT SIDEBAR (E-Book Index & Reading Tracker)    -->
             <!-- ------------------------------------------------------------------- -->
             <aside
-                class="hidden lg:flex lg:flex-col lg:w-[290px] lg:shrink-0 border-r border-slate-200 bg-white sticky top-[105px] h-[calc(100vh-105px)] select-none"
+                class="hidden lg:flex lg:flex-col lg:w-[295px] lg:shrink-0 border-r border-slate-200/90 bg-white sticky top-[105px] h-[calc(100vh-105px)] select-none shadow-xs"
             >
-                <!-- Active Filter Banner -->
+                <!-- Active Filter + E-Book Progress Banner -->
                 <div
-                    class="p-4 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-orange-50/40"
+                    class="p-4 border-b border-slate-200 bg-gradient-to-br from-slate-900 via-navy-900 to-slate-800 text-white"
                 >
-                    <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center justify-between mb-2">
                         <span
-                            class="text-[11px] font-bold uppercase tracking-wider text-rmuti-600 flex items-center gap-1"
+                            class="text-[11px] font-bold uppercase tracking-wider text-rmuti-400 flex items-center gap-1"
                         >
-                            <i data-lucide="filter" class="w-3.5 h-3.5"></i>
-                            สารบัญกรองตามสิทธิ์
+                            <i data-lucide="book-marked" class="w-3.5 h-3.5"></i>
+                            สารบัญ E-Book ตามสิทธิ์
                         </span>
                         <button
                             @click="onboardingModalOpen = true"
                             type="button"
-                            class="text-[11px] font-semibold text-rmuti-600 hover:text-rmuti-700 underline flex items-center gap-0.5"
+                            class="text-[11px] font-semibold text-rmuti-300 hover:text-white underline flex items-center gap-0.5"
                         >
                             <span>เปลี่ยนระดับ</span>
                         </button>
                     </div>
                     <div
-                        class="flex items-center gap-2.5 bg-white p-2.5 rounded-xl border border-orange-200/80 shadow-2xs"
+                        class="flex items-center gap-2.5 bg-white/10 backdrop-blur-xs p-2.5 rounded-xl border border-white/15"
                     >
                         <div
-                            class="w-9 h-9 rounded-lg bg-rmuti-600 text-white flex items-center justify-center font-bold text-sm shrink-0"
+                            class="w-9 h-9 rounded-lg bg-rmuti-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm"
                             x-text="currentLevelObj.badge"
                         ></div>
-                        <div class="min-w-0">
+                        <div class="min-w-0 flex-1">
                             <div
-                                class="text-xs font-bold text-slate-900 truncate"
+                                class="text-xs font-bold text-white truncate"
                                 x-text="currentLevelObj.name"
                             ></div>
-                            <div class="text-[11px] text-slate-500">
-                                แสดง
-                                <span
-                                    class="font-semibold text-rmuti-600"
-                                    x-text="totalFilteredTopicsCount"
-                                ></span>
-                                หัวข้อที่เกี่ยวข้อง
+                            <div class="text-[11px] text-slate-300 flex items-center justify-between mt-0.5">
+                                <span>คัดกรอง <strong class="text-rmuti-400" x-text="totalFilteredTopicsCount"></strong> บทเรียน</span>
+                                <span class="text-[10px] text-emerald-300 font-semibold" x-text="'อ่านแล้ว ' + readTopicsCount + '/' + totalFilteredTopicsCount"></span>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Reading Progress Bar -->
+                    <div class="mt-3">
+                        <div class="flex items-center justify-between text-[10px] text-slate-300 mb-1">
+                            <span>ความคืบหน้าการอ่านคู่มือ</span>
+                            <span class="font-bold text-rmuti-400" x-text="readingProgressPercent + '%'"></span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                                class="h-full bg-gradient-to-r from-rmuti-500 to-amber-400 transition-all duration-300"
+                                :style="'width: ' + readingProgressPercent + '%'"
+                            ></div>
                         </div>
                     </div>
                 </div>
@@ -634,16 +665,23 @@
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'"
                                         class="w-full text-left px-2.5 py-2 rounded-lg text-xs transition flex flex-col gap-1.5 group"
                                     >
-                                        <div class="flex items-start gap-1.5">
+                                        <div class="flex items-start justify-between gap-1.5">
+                                            <div class="flex items-start gap-1.5 min-w-0">
+                                                <span
+                                                    :class="currentTopicId === topic.id && !isSearching ? 'text-rmuti-600 font-bold' : 'text-slate-400 group-hover:text-slate-600'"
+                                                    class="font-mono text-[11px] shrink-0 mt-0.5"
+                                                    x-text="topic.code"
+                                                ></span>
+                                                <span
+                                                    class="leading-snug"
+                                                    x-text="topic.title"
+                                                ></span>
+                                            </div>
                                             <span
-                                                :class="currentTopicId === topic.id && !isSearching ? 'text-rmuti-600 font-bold' : 'text-slate-400 group-hover:text-slate-600'"
-                                                class="font-mono text-[11px] shrink-0 mt-0.5"
-                                                x-text="topic.code"
-                                            ></span>
-                                            <span
-                                                class="leading-snug"
-                                                x-text="topic.title"
-                                            ></span>
+                                                x-show="bookmarkedTopics.includes(topic.id)"
+                                                class="text-amber-500 shrink-0 mt-0.5"
+                                                title="คั่นหน้าไว้"
+                                            >★</span>
                                         </div>
                                         <div
                                             class="flex items-center justify-between pl-5"
@@ -655,6 +693,14 @@
                                                 class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border"
                                                 x-text="getTopicBadgeText(topic)"
                                             ></span>
+                                            <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+                                                <span class="font-mono" x-text="'น.' + getTopicPageNumber(topic.id)"></span>
+                                                <span
+                                                    x-show="readTopics.includes(topic.id)"
+                                                    class="text-emerald-600 font-bold"
+                                                    title="อ่านแล้ว"
+                                                >✓</span>
+                                            </div>
                                         </div>
                                     </button>
                                 </template>
@@ -664,7 +710,7 @@
 
                     <!-- Hidden Non-Relevant Topics Explanation Card -->
                     <div
-                        class="p-3 rounded-xl bg-slate-100/80 border border- dashed border-slate-300 text-[11px] text-slate-500 leading-relaxed"
+                        class="p-3 rounded-xl bg-slate-100/80 border border-dashed border-slate-300 text-[11px] text-slate-500 leading-relaxed"
                     >
                         <div
                             class="font-semibold text-slate-700 flex items-center gap-1 mb-0.5"
@@ -684,11 +730,120 @@
             </aside>
 
             <!-- ------------------------------------------------------------------- -->
-            <!-- 4. MAIN CONTENT AREA                                                -->
+            <!-- 4. MAIN DASHBOARD + E-BOOK WORKSPACE                                -->
             <!-- ------------------------------------------------------------------- -->
             <main
-                class="flex-1 min-w-0 px-4 sm:px-8 py-6 lg:py-8 max-w-4xl mx-auto"
+                class="flex-1 min-w-0 px-3 sm:px-6 lg:px-8 py-5 lg:py-6 max-w-[1140px] mx-auto"
             >
+                <!-- =============================================================== -->
+                <!-- 4.0 STUDENT DASHBOARD KPI STRIP & VIEW MODE SWITCHER            -->
+                <!-- =============================================================== -->
+                <section class="mb-6 space-y-3.5">
+                    <!-- Top Control Bar: Portal Title + View Switcher (E-Book vs Dashboard Overview) -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 sm:px-4 rounded-2xl border border-slate-200/90 shadow-2xs">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-8 h-8 rounded-xl bg-rmuti-600/10 text-rmuti-600 flex items-center justify-center font-bold">
+                                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                            </span>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs sm:text-sm font-bold text-slate-900">RMUTI Student Smart Dashboard & E-Book</span>
+                                    <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold bg-orange-100 text-rmuti-700 rounded-md" x-text="'เฉพาะ ' + currentLevelObj.shortName"></span>
+                                </div>
+                                <p class="text-[11px] text-slate-500">สรุปเกณฑ์สำคัญประจำตัวนักศึกษา พร้อมคู่มือ E-Book อัจฉริยะรายหน้า (กดปุ่ม ← → เพื่อพลิกหน้า)</p>
+                            </div>
+                        </div>
+
+                        <!-- Mode Switcher Pills -->
+                        <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                            <button
+                                @click="viewMode = 'ebook'; clearSearch()"
+                                type="button"
+                                :class="viewMode === 'ebook' && !isSearching
+                                    ? 'bg-navy-900 text-white shadow-xs'
+                                    : 'text-slate-600 hover:text-slate-900'"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                            >
+                                <i data-lucide="book-open" class="w-3.5 h-3.5 text-rmuti-400"></i>
+                                <span>โหมดอ่าน E-Book</span>
+                            </button>
+                            <button
+                                @click="viewMode = 'dashboard'; clearSearch()"
+                                type="button"
+                                :class="viewMode === 'dashboard' && !isSearching
+                                    ? 'bg-navy-900 text-white shadow-xs'
+                                    : 'text-slate-600 hover:text-slate-900'"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                            >
+                                <i data-lucide="grid" class="w-3.5 h-3.5 text-rmuti-400"></i>
+                                <span>ภาพรวม Dashboard</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4 At-a-Glance Student KPI Cards -->
+                    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+                        <!-- KPI 1: Level Graduation / GPAX Rule -->
+                        <div
+                            @click="selectTopic(levelDashboardKpi.targetTopicId, false); viewMode = 'ebook'"
+                            class="bg-white rounded-2xl p-3.5 border border-slate-200/90 hover:border-rmuti-400 shadow-2xs transition cursor-pointer group"
+                        >
+                            <div class="flex items-center justify-between text-[11px] text-slate-500 mb-1">
+                                <span class="font-semibold text-rmuti-600" x-text="levelDashboardKpi.label"></span>
+                                <i data-lucide="gauge" class="w-4 h-4 text-rmuti-500 group-hover:scale-110 transition"></i>
+                            </div>
+                            <div class="text-sm sm:text-base font-extrabold text-slate-900 truncate" x-text="levelDashboardKpi.value"></div>
+                            <div class="text-[11px] text-slate-500 mt-0.5 truncate" x-text="levelDashboardKpi.sub"></div>
+                        </div>
+
+                        <!-- KPI 2: Current E-Book Page & Chapter -->
+                        <div
+                            @click="viewMode = 'ebook'"
+                            class="bg-white rounded-2xl p-3.5 border border-slate-200/90 hover:border-rmuti-400 shadow-2xs transition cursor-pointer group"
+                        >
+                            <div class="flex items-center justify-between text-[11px] text-slate-500 mb-1">
+                                <span class="font-semibold text-blue-600">ตำแหน่งหน้า E-Book ปัจจุบัน</span>
+                                <i data-lucide="book-open-check" class="w-4 h-4 text-blue-500 group-hover:scale-110 transition"></i>
+                            </div>
+                            <div class="text-sm sm:text-base font-extrabold text-slate-900">
+                                บทที่ <span class="text-rmuti-600" x-text="currentTopicIndex + 1"></span>/<span x-text="totalFilteredTopicsCount"></span>
+                                <span class="text-xs font-semibold text-slate-500 ml-1" x-text="'(หน้า ' + ebookPageRange + ')'"></span>
+                            </div>
+                            <div class="text-[11px] text-slate-500 mt-0.5 truncate" x-text="'อ่านแล้ว ' + readTopicsCount + ' จาก ' + totalFilteredTopicsCount + ' หัวข้อ (' + readingProgressPercent + '%)'"></div>
+                        </div>
+
+                        <!-- KPI 3: Bookmarked Pages -->
+                        <div
+                            @click="toggleBookmark(currentTopic?.id)"
+                            class="bg-white rounded-2xl p-3.5 border border-slate-200/90 hover:border-amber-400 shadow-2xs transition cursor-pointer group"
+                        >
+                            <div class="flex items-center justify-between text-[11px] text-slate-500 mb-1">
+                                <span class="font-semibold text-amber-600">ที่คั่นหนังสือ (Bookmarks)</span>
+                                <i data-lucide="bookmark" class="w-4 h-4 text-amber-500 group-hover:scale-110 transition"></i>
+                            </div>
+                            <div class="text-sm sm:text-base font-extrabold text-slate-900">
+                                คั่นไว้ <span class="text-amber-600" x-text="bookmarkedTopics.length"></span> หน้า
+                            </div>
+                            <div class="text-[11px] text-slate-500 mt-0.5 truncate">
+                                <span x-text="isCurrentBookmarked ? '★ คั่นหน้าบทนี้แล้ว (คลิกเพื่อเอาออก)' : '☆ คลิกเพื่อคั่นหน้าบทปัจจุบัน'"></span>
+                            </div>
+                        </div>
+
+                        <!-- KPI 4: One-Stop Service Location -->
+                        <div
+                            @click="ebookModalOpen = true"
+                            class="bg-white rounded-2xl p-3.5 border border-slate-200/90 hover:border-emerald-400 shadow-2xs transition cursor-pointer group"
+                        >
+                            <div class="flex items-center justify-between text-[11px] text-slate-500 mb-1">
+                                <span class="font-semibold text-emerald-600">พิกัดจุดบริการงานทะเบียน</span>
+                                <i data-lucide="building-2" class="w-4 h-4 text-emerald-600 group-hover:scale-110 transition"></i>
+                            </div>
+                            <div class="text-sm sm:text-base font-extrabold text-slate-900 truncate">สวท. อาคาร 35 ชั้น 2</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5 truncate">เปิด PDF ทั้งเล่ม / ดาวน์โหลดแบบฟอร์ม วช.</div>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- ================================================================= -->
                 <!-- 4A. SEARCH RESULTS VIEW (Shown when user types in Search Bar)     -->
                 <!-- ================================================================= -->
@@ -805,7 +960,7 @@
                                     <span
                                         class="text-xs font-semibold text-rmuti-600 flex items-center gap-1 group-hover:translate-x-1 transition"
                                     >
-                                        อ่านรายละเอียด
+                                        เปิดหน้า E-Book นี้
                                         <i
                                             data-lucide="arrow-right"
                                             class="w-3.5 h-3.5"
@@ -865,88 +1020,297 @@
                 </div>
 
                 <!-- ================================================================= -->
-                <!-- 4B. STANDARD DOCUMENT VIEW (Breadcrumb + Rich Article + Prev/Next)-->
+                <!-- 4B-1. DASHBOARD OVERVIEW BENTO GRID MODE (viewMode === 'dashboard')-->
                 <!-- ================================================================= -->
-                <div x-show="!isSearching && currentTopic" class="space-y-6">
-                    <!-- Breadcrumb & Font Size Utility Bar -->
-                    <div
-                        class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-200"
-                    >
-                        <nav
-                            aria-label="Breadcrumb"
-                            class="flex items-center flex-wrap gap-1.5 text-xs text-slate-500"
-                        >
-                            <span
-                                class="font-medium text-slate-600 flex items-center gap-1"
-                            >
-                                <i
-                                    data-lucide="book"
-                                    class="w-3.5 h-3.5 text-rmuti-600"
-                                ></i>
-                                <span
-                                    x-text="'คู่มือนักศึกษา ' + academicYear"
-                                ></span>
-                            </span>
-                            <i
-                                data-lucide="chevron-right"
-                                class="w-3.5 h-3.5 text-slate-400"
-                            ></i>
-                            <span
-                                class="text-slate-600"
-                                x-text="currentCategory ? currentCategory.title : ''"
-                            ></span>
-                            <i
-                                data-lucide="chevron-right"
-                                class="w-3.5 h-3.5 text-slate-400"
-                            ></i>
-                            <span
-                                class="font-semibold text-rmuti-600"
-                                x-text="currentTopic ? currentTopic.code + ' ' + currentTopic.title : ''"
-                            ></span>
-                        </nav>
+                <div
+                    x-show="!isSearching && viewMode === 'dashboard'"
+                    x-cloak
+                    class="space-y-6"
+                >
+                    <!-- Interactive GPAX Simulator + Bookmarks Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <!-- Interactive GPAX / Status Simulator Card -->
+                        <div class="lg:col-span-2 bg-gradient-to-br from-navy-900 via-slate-900 to-navy-800 text-white rounded-2xl p-5 sm:p-6 border border-slate-800 shadow-md">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="w-9 h-9 rounded-xl bg-rmuti-600 flex items-center justify-center font-bold">
+                                        <i data-lucide="calculator" class="w-5 h-5 text-white"></i>
+                                    </span>
+                                    <div>
+                                        <h2 class="text-sm sm:text-base font-bold">เครื่องจำลองตรวจสอบสถานะเกรดเฉลี่ย (Interactive GPAX Check)</h2>
+                                        <p class="text-xs text-slate-400">ลองเลื่อนปรับค่า GPAX เพื่อดูสถานะตามเกณฑ์ระดับ <span class="text-rmuti-400 font-semibold" x-text="currentLevelObj.shortName"></span></p>
+                                    </div>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-white/10 text-rmuti-300" x-text="'GPAX ที่จำลอง: ' + Number(simGpax).toFixed(2)"></span>
+                            </div>
 
-                        <!-- Reader Controls (Font Size Adjuster) -->
-                        <div
-                            class="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 text-xs shadow-2xs"
-                        >
-                            <span class="text-[11px] text-slate-400 px-1.5"
-                                >ขนาดตัวอักษร:</span
-                            >
+                            <div class="space-y-4">
+                                <div>
+                                    <input
+                                        type="range"
+                                        min="1.00"
+                                        max="4.00"
+                                        step="0.05"
+                                        x-model="simGpax"
+                                        class="w-full accent-rmuti-500 cursor-pointer h-2 bg-slate-700 rounded-lg"
+                                    />
+                                    <div class="flex justify-between text-[11px] text-slate-400 mt-1 font-mono">
+                                        <span>1.00</span>
+                                        <span>1.50 (จุดตัดรีไทร์ ป.ตรี)</span>
+                                        <span>2.00 (เกณฑ์ปกติ)</span>
+                                        <span>3.00 (ป.โท/เอก)</span>
+                                        <span>4.00</span>
+                                    </div>
+                                </div>
+
+                                <div
+                                    :class="{
+                                        'bg-emerald-500/20 border-emerald-400/40 text-emerald-200': simGpaxStatus.color === 'green',
+                                        'bg-amber-500/20 border-amber-400/40 text-amber-200': simGpaxStatus.color === 'yellow',
+                                        'bg-rose-500/20 border-rose-400/40 text-rose-200': simGpaxStatus.color === 'red'
+                                    }"
+                                    class="p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                                >
+                                    <div>
+                                        <div class="text-xs font-bold uppercase tracking-wider" x-text="simGpaxStatus.badge"></div>
+                                        <div class="text-sm sm:text-base font-bold text-white mt-0.5" x-text="simGpaxStatus.title"></div>
+                                        <p class="text-xs opacity-90 mt-0.5" x-text="simGpaxStatus.desc"></p>
+                                    </div>
+                                    <button
+                                        @click="selectTopic(levelDashboardKpi.targetTopicId, false); viewMode = 'ebook'"
+                                        type="button"
+                                        class="px-3.5 py-2 rounded-xl bg-white text-slate-900 hover:bg-rmuti-500 hover:text-white text-xs font-bold transition shrink-0"
+                                    >
+                                        เปิดหน้าระเบียบวัดผล →
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bookmarked E-Book Pages Card -->
+                        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                                        <i data-lucide="bookmark-check" class="w-4 h-4 text-amber-500"></i>
+                                        <span>หน้าที่คั่นไว้ (Bookmarks)</span>
+                                    </h3>
+                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800" x-text="bookmarkedTopics.length + ' หน้า'"></span>
+                                </div>
+                                <div x-show="bookmarkedTopicsList.length === 0" class="py-8 text-center text-xs text-slate-400">
+                                    ยังไม่มีหน้าที่คั่นไว้<br>คลิกปุ่ม ★ บนมุมกระดาษ E-Book เพื่อบันทึกหน้าที่ใช้บ่อย
+                                </div>
+                                <div x-show="bookmarkedTopicsList.length > 0" class="space-y-2 max-h-44 overflow-y-auto">
+                                    <template x-for="bm in bookmarkedTopicsList" :key="bm.id">
+                                        <button
+                                            @click="selectTopic(bm.id, false); viewMode = 'ebook'"
+                                            type="button"
+                                            class="w-full p-2.5 rounded-xl bg-amber-50/70 hover:bg-amber-100/80 border border-amber-200/80 text-left transition flex items-center justify-between gap-2"
+                                        >
+                                            <div class="min-w-0">
+                                                <div class="text-xs font-bold text-slate-900 truncate" x-text="bm.code + ' ' + bm.title"></div>
+                                                <div class="text-[10px] text-amber-700" x-text="'หน้าอ้างอิง E-Book: น.' + getTopicPageNumber(bm.id)"></div>
+                                            </div>
+                                            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-600 shrink-0"></i>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
                             <button
-                                @click="fontSize = 'text-sm'"
-                                :class="fontSize === 'text-sm' ? 'bg-rmuti-600 text-white' : 'text-slate-600 hover:bg-slate-100'"
-                                class="px-2 py-0.5 rounded font-medium transition"
+                                @click="viewMode = 'ebook'"
                                 type="button"
+                                class="mt-4 w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition"
                             >
-                                A-
-                            </button>
-                            <button
-                                @click="fontSize = 'text-base'"
-                                :class="fontSize === 'text-base' ? 'bg-rmuti-600 text-white' : 'text-slate-600 hover:bg-slate-100'"
-                                class="px-2 py-0.5 rounded font-medium transition"
-                                type="button"
-                            >
-                                A
-                            </button>
-                            <button
-                                @click="fontSize = 'text-lg'"
-                                :class="fontSize === 'text-lg' ? 'bg-rmuti-600 text-white' : 'text-slate-600 hover:bg-slate-100'"
-                                class="px-2 py-0.5 rounded font-medium transition"
-                                type="button"
-                            >
-                                A+
+                                กลับไปโหมดเปิดอ่าน E-Book
                             </button>
                         </div>
                     </div>
 
-                    <!-- Main Article Card -->
-                    <article
-                        class="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden"
-                    >
-                        <!-- Article Header Banner -->
+                    <!-- Bento Grid of All Filtered E-Book Chapters -->
+                    <div class="space-y-4">
+                        <template x-for="cat in filteredCategories" :key="cat.id">
+                            <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs">
+                                <div class="flex items-center justify-between mb-4 pb-2.5 border-b border-slate-100">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="w-7 h-7 rounded-lg bg-navy-900 text-white text-xs font-bold flex items-center justify-center" x-text="cat.number"></span>
+                                        <h3 class="text-sm sm:text-base font-bold text-slate-900" x-text="'หมวดที่ ' + cat.number + ': ' + cat.title"></h3>
+                                    </div>
+                                    <span class="text-xs text-slate-400" x-text="cat.topics.length + ' บทเรียน'"></span>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                                    <template x-for="tp in cat.topics" :key="tp.id">
+                                        <div
+                                            @click="selectTopic(tp.id, false); viewMode = 'ebook'"
+                                            class="group rounded-2xl p-4 border border-slate-200 hover:border-rmuti-500 bg-slate-50/60 hover:bg-white shadow-2xs hover:shadow-md transition cursor-pointer flex flex-col justify-between"
+                                        >
+                                            <div>
+                                                <div class="flex items-center justify-between gap-2 mb-2">
+                                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-rmuti-700" x-text="getTopicBadgeText(tp)"></span>
+                                                    <span class="text-[11px] font-mono text-slate-400" x-text="'หน้า E-Book น.' + getTopicPageNumber(tp.id)"></span>
+                                                </div>
+                                                <h4 class="font-bold text-sm text-slate-900 group-hover:text-rmuti-600 transition mb-1.5" x-text="tp.code + ' ' + tp.title"></h4>
+                                                <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed" x-text="tp.summary"></p>
+                                            </div>
+                                            <div class="mt-3 pt-2.5 border-t border-slate-200/70 flex items-center justify-between text-[11px]">
+                                                <span class="text-slate-400 flex items-center gap-1">
+                                                    <i data-lucide="clock" class="w-3 h-3"></i>
+                                                    <span x-text="tp.readTime"></span>
+                                                </span>
+                                                <span class="font-bold text-rmuti-600 flex items-center gap-1 group-hover:translate-x-0.5 transition">
+                                                    เปิดอ่านหน้านี้ <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- ================================================================= -->
+                <!-- 4B-2. SMART E-BOOK READER + RIGHT INSPECTOR (viewMode === 'ebook')-->
+                <!-- ================================================================= -->
+                <div
+                    x-show="!isSearching && viewMode === 'ebook' && currentTopic"
+                    class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start"
+                >
+                    <!-- CENTER COLUMN: E-BOOK PAPER SHEET (xl:col-span-9) -->
+                    <div class="xl:col-span-9 space-y-5 min-w-0">
+                        <!-- Top E-Book Controls Bar (Breadcrumb + Page Flipper + Font Size) -->
                         <div
-                            class="p-6 sm:p-8 bg-gradient-to-br from-navy-900 via-navy-900 to-slate-800 text-white relative overflow-hidden"
+                            class="flex flex-wrap items-center justify-between gap-2 bg-white px-4 py-2.5 rounded-2xl border border-slate-200/90 shadow-2xs"
                         >
+                            <nav
+                                aria-label="Breadcrumb"
+                                class="flex items-center flex-wrap gap-1.5 text-xs text-slate-500 min-w-0"
+                            >
+                                <span
+                                    class="font-semibold text-slate-700 flex items-center gap-1"
+                                >
+                                    <i
+                                        data-lucide="book-open"
+                                        class="w-3.5 h-3.5 text-rmuti-600"
+                                    ></i>
+                                    <span
+                                        x-text="'E-Book ปี ' + academicYear"
+                                    ></span>
+                                </span>
+                                <i
+                                    data-lucide="chevron-right"
+                                    class="w-3.5 h-3.5 text-slate-400"
+                                ></i>
+                                <span
+                                    class="text-slate-600 truncate max-w-[180px]"
+                                    x-text="currentCategory ? currentCategory.title : ''"
+                                ></span>
+                                <i
+                                    data-lucide="chevron-right"
+                                    class="w-3.5 h-3.5 text-slate-400"
+                                ></i>
+                                <span
+                                    class="font-bold text-rmuti-600"
+                                    x-text="'หน้า ' + ebookPageRange"
+                                ></span>
+                            </nav>
+
+                            <!-- Right Controls: Quick Prev/Next Flip + Font Size Adjuster -->
+                            <div class="flex items-center gap-2">
+                                <!-- Mini Page Flip Buttons -->
+                                <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 text-xs">
+                                    <button
+                                        @click="flipPrevPage()"
+                                        :disabled="!prevTopic"
+                                        :class="prevTopic ? 'text-slate-700 hover:bg-white hover:text-rmuti-600' : 'text-slate-300 cursor-not-allowed'"
+                                        class="px-2 py-1 rounded-md font-semibold transition flex items-center gap-1"
+                                        type="button"
+                                        title="หน้าก่อนหน้า (ปุ่มลูกศรซ้าย ←)"
+                                    >
+                                        <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                                        <span class="hidden sm:inline">ก่อนหน้า</span>
+                                    </button>
+                                    <span class="px-2 text-[11px] font-mono font-bold text-slate-600" x-text="(currentTopicIndex + 1) + ' / ' + totalFilteredTopicsCount"></span>
+                                    <button
+                                        @click="flipNextPage()"
+                                        :disabled="!nextTopic"
+                                        :class="nextTopic ? 'text-slate-700 hover:bg-white hover:text-rmuti-600' : 'text-slate-300 cursor-not-allowed'"
+                                        class="px-2 py-1 rounded-md font-semibold transition flex items-center gap-1"
+                                        type="button"
+                                        title="หน้าถัดไป (ปุ่มลูกศรขวา →)"
+                                    >
+                                        <span class="hidden sm:inline">ถัดไป</span>
+                                        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Reader Controls (Font Size Adjuster) -->
+                                <div
+                                    class="flex items-center gap-0.5 bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-xs"
+                                >
+                                    <button
+                                        @click="fontSize = 'text-sm'"
+                                        :class="fontSize === 'text-sm' ? 'bg-rmuti-600 text-white' : 'text-slate-600 hover:bg-white'"
+                                        class="px-2 py-1 rounded-md font-medium transition"
+                                        type="button"
+                                    >
+                                        A-
+                                    </button>
+                                    <button
+                                        @click="fontSize = 'text-base'"
+                                        :class="fontSize === 'text-base' ? 'bg-rmuti-600 text-white' : 'text-slate-600 hover:bg-white'"
+                                        class="px-2 py-1 rounded-md font-medium transition"
+                                        type="button"
+                                    >
+                                        A
+                                    </button>
+                                    <button
+                                        @click="fontSize = 'text-lg'"
+                                        :class="fontSize === 'text-lg' ? 'bg-rmuti-600 text-white' : 'text-slate-600 hover:bg-white'"
+                                        class="px-2 py-1 rounded-md font-medium transition"
+                                        type="button"
+                                    >
+                                        A+
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main E-Book Sheet Container -->
+                        <article
+                            class="ebook-sheet rounded-2xl border border-slate-300/90 overflow-hidden flex"
+                        >
+                            <!-- Simulated Left Book Spine -->
+                            <div class="ebook-spine w-2.5 sm:w-3.5 shrink-0 hidden sm:flex flex-col items-center justify-around py-12 opacity-90">
+                                <span class="w-1 h-8 rounded-full bg-white/20"></span>
+                                <span class="w-1 h-8 rounded-full bg-rmuti-500/60"></span>
+                                <span class="w-1 h-8 rounded-full bg-white/20"></span>
+                                <span class="w-1 h-8 rounded-full bg-rmuti-500/60"></span>
+                                <span class="w-1 h-8 rounded-full bg-white/20"></span>
+                            </div>
+
+                            <!-- E-Book Page Content Wrapper -->
+                            <div class="flex-1 min-w-0">
+                                <!-- E-Book Running Header (หัวกระดาษหนังสือคู่มือราชการ) -->
+                                <div class="px-6 sm:px-8 py-2.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                                    <span x-text="'RMUTI SMART E-BOOK • ปีการศึกษา ' + academicYear + ' (' + currentLevelObj.shortName + ')'"></span>
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-semibold text-slate-700" x-text="'หน้าอ้างอิงเล่มจริง: หน้า ' + ebookPageRange"></span>
+                                        <button
+                                            @click="toggleBookmark(currentTopic.id)"
+                                            type="button"
+                                            :class="isCurrentBookmarked ? 'bg-amber-500 text-white' : 'bg-white text-slate-600 hover:text-amber-600 border border-slate-300'"
+                                            class="px-2 py-0.5 rounded-md font-sans font-bold text-[11px] transition flex items-center gap-1 shadow-2xs"
+                                        >
+                                            <span x-text="isCurrentBookmarked ? '★ คั่นหน้าแล้ว' : '☆ คั่นหน้านี้'"></span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Article Header Banner -->
+                                <div
+                                    class="p-6 sm:p-8 bg-gradient-to-br from-navy-900 via-navy-900 to-slate-800 text-white relative overflow-hidden"
+                                >
                             <div class="relative z-10">
                                 <!-- Badges Row -->
                                 <div
@@ -1647,15 +2011,22 @@
                                 </div>
                             </section>
                         </div>
-                    </article>
 
-                    <!-- Previous / Next Topic Navigation Footer -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <!-- E-Book Sheet Bottom Running Footer -->
+                        <div class="px-6 sm:px-8 py-3 bg-slate-100 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 font-mono">
+                            <span>สำนักส่งเสริมวิชาการและงานทะเบียน (ADEP) มทร.อีสาน</span>
+                            <span class="font-bold text-slate-700" x-text="'บทที่ ' + (currentTopicIndex + 1) + ' / ' + totalFilteredTopicsCount + ' • หน้า E-Book: ' + ebookPageRange"></span>
+                        </div>
+                    </div>
+                </article>
+
+                    <!-- Previous / Next E-Book Page Flipper Footer -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                         <!-- Previous Topic Button -->
                         <div>
                             <button
                                 x-show="prevTopic"
-                                @click="selectTopic(prevTopic.id, false)"
+                                @click="flipPrevPage()"
                                 type="button"
                                 class="w-full h-full p-4 rounded-2xl bg-white border border-slate-200 hover:border-rmuti-500 shadow-2xs hover:shadow-md transition text-left flex items-center gap-3 group"
                             >
@@ -1663,7 +2034,7 @@
                                     class="w-9 h-9 rounded-xl bg-slate-100 group-hover:bg-rmuti-50 text-slate-600 group-hover:text-rmuti-600 flex items-center justify-center shrink-0 transition"
                                 >
                                     <i
-                                        data-lucide="arrow-left"
+                                        data-lucide="book-open"
                                         class="w-4 h-4"
                                     ></i>
                                 </div>
@@ -1671,7 +2042,7 @@
                                     <div
                                         class="text-[11px] text-slate-400 font-medium"
                                     >
-                                        หัวข้อก่อนหน้า (Previous)
+                                        ◀ พลิกหน้าก่อนหน้า (Previous Page)
                                     </div>
                                     <div
                                         class="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-rmuti-600 truncate"
@@ -1685,7 +2056,7 @@
                         <div>
                             <button
                                 x-show="nextTopic"
-                                @click="selectTopic(nextTopic.id, false)"
+                                @click="flipNextPage()"
                                 type="button"
                                 class="w-full h-full p-4 rounded-2xl bg-white border border-slate-200 hover:border-rmuti-500 shadow-2xs hover:shadow-md transition text-right flex items-center justify-end gap-3 group"
                             >
@@ -1693,7 +2064,7 @@
                                     <div
                                         class="text-[11px] text-slate-400 font-medium"
                                     >
-                                        หัวข้อถัดไป (Next)
+                                        พลิกหน้าถัดไป (Next Page) ▶
                                     </div>
                                     <div
                                         class="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-rmuti-600 truncate"
@@ -1704,7 +2075,7 @@
                                     class="w-9 h-9 rounded-xl bg-slate-100 group-hover:bg-rmuti-50 text-slate-600 group-hover:text-rmuti-600 flex items-center justify-center shrink-0 transition"
                                 >
                                     <i
-                                        data-lucide="arrow-right"
+                                        data-lucide="book-open-check"
                                         class="w-4 h-4"
                                     ></i>
                                 </div>
@@ -1714,7 +2085,7 @@
 
                     <!-- Portal Footer -->
                     <footer
-                        class="pt-6 pb-10 text-center text-xs text-slate-400 border-t border-slate-200/80"
+                        class="pt-4 pb-8 text-center text-xs text-slate-400 border-t border-slate-200/80"
                     >
                         <p class="font-medium text-slate-500">
                             งานพัฒนาวิชาการและส่งเสริมการศึกษา (ADEP)
@@ -1727,6 +2098,95 @@
                             <span x-text="academicYear"></span>
                         </p>
                     </footer>
+                    </div>
+
+                    <!-- RIGHT COLUMN: MINI DASHBOARD & E-BOOK INSPECTOR RAIL (xl:col-span-3) -->
+                    <aside class="xl:col-span-3 space-y-4 xl:sticky xl:top-[120px]">
+                        <!-- Widget 1: Interactive Mini GPAX Status Check -->
+                        <div class="bg-navy-900 text-white rounded-2xl p-4 border border-slate-800 shadow-md">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-rmuti-400 flex items-center gap-1">
+                                    <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+                                    จำลองเช็กสถานะ GPAX
+                                </span>
+                                <span class="font-mono text-xs font-bold text-white bg-white/10 px-2 py-0.5 rounded" x-text="Number(simGpax).toFixed(2)"></span>
+                            </div>
+                            <input
+                                type="range"
+                                min="1.00"
+                                max="4.00"
+                                step="0.05"
+                                x-model="simGpax"
+                                class="w-full accent-rmuti-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg my-2"
+                            />
+                            <div
+                                :class="{
+                                    'bg-emerald-500/20 border-emerald-400/30 text-emerald-200': simGpaxStatus.color === 'green',
+                                    'bg-amber-500/20 border-amber-400/30 text-amber-200': simGpaxStatus.color === 'yellow',
+                                    'bg-rose-500/20 border-rose-400/30 text-rose-200': simGpaxStatus.color === 'red'
+                                }"
+                                class="p-3 rounded-xl border text-xs mt-1"
+                            >
+                                <div class="font-bold text-white" x-text="simGpaxStatus.title"></div>
+                                <div class="text-[11px] opacity-90 mt-0.5 leading-snug" x-text="simGpaxStatus.desc"></div>
+                            </div>
+                        </div>
+
+                        <!-- Widget 2: Quick Form Downloads for Current E-Book Page -->
+                        <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5 mb-3">
+                                <i data-lucide="file-down" class="w-4 h-4 text-rmuti-600"></i>
+                                <span>เอกสารประจำหน้านี้</span>
+                            </h3>
+                            <div class="space-y-2">
+                                <button
+                                    x-show="currentTopic?.officialRegulation"
+                                    @click="triggerDownloadToast({ title: currentTopic.officialRegulation?.title, subtitle: currentTopic.officialRegulation?.clause, type: 'pdf' })"
+                                    type="button"
+                                    class="w-full p-2.5 rounded-xl bg-rose-50 hover:bg-rose-100/80 border border-rose-200 text-left transition flex items-center gap-2.5"
+                                >
+                                    <span class="px-1.5 py-0.5 rounded bg-rose-600 text-white font-bold text-[10px] shrink-0">PDF</span>
+                                    <span class="text-xs font-semibold text-rose-950 truncate">ระเบียบข้อบังคับฉบับเต็ม</span>
+                                </button>
+                                <template x-for="doc in (currentTopic?.downloads || [])" :key="doc.title">
+                                    <button
+                                        @click="triggerDownloadToast(doc)"
+                                        type="button"
+                                        class="w-full p-2.5 rounded-xl bg-slate-50 hover:bg-orange-50 border border-slate-200 hover:border-rmuti-300 text-left transition flex items-center justify-between gap-2"
+                                    >
+                                        <span class="text-xs font-medium text-slate-700 truncate" x-text="doc.title"></span>
+                                        <i :data-lucide="doc.type === 'pdf' ? 'download' : 'external-link'" class="w-3.5 h-3.5 text-rmuti-600 shrink-0"></i>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Widget 3: Bookmarked E-Book Pages Quick Jump -->
+                        <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
+                            <div class="flex items-center justify-between mb-2.5">
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                                    <i data-lucide="bookmark" class="w-4 h-4 text-amber-500"></i>
+                                    <span>ที่คั่นหนังสือของคุณ</span>
+                                </h3>
+                                <span class="text-[11px] font-bold text-amber-600" x-text="bookmarkedTopics.length"></span>
+                            </div>
+                            <div x-show="bookmarkedTopicsList.length === 0" class="text-[11px] text-slate-400 py-3 text-center">
+                                กดปุ่ม ☆ มุมบนขวาของหน้ากระดาษเพื่อคั่นหน้าสำคัญ
+                            </div>
+                            <div x-show="bookmarkedTopicsList.length > 0" class="space-y-1.5">
+                                <template x-for="bm in bookmarkedTopicsList" :key="bm.id">
+                                    <button
+                                        @click="selectTopic(bm.id, false)"
+                                        type="button"
+                                        class="w-full px-2.5 py-2 rounded-lg text-xs bg-amber-50/70 hover:bg-amber-100 text-slate-800 font-medium text-left flex items-center justify-between gap-1.5 transition"
+                                    >
+                                        <span class="truncate" x-text="bm.code + ' ' + bm.title"></span>
+                                        <span class="text-[10px] font-mono text-amber-700 shrink-0" x-text="'น.' + getTopicPageNumber(bm.id)"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </aside>
                 </div>
             </main>
         </div>
@@ -2187,9 +2647,26 @@
                     academicYear: "2569",
                     currentLevel: "bachelor",
                     currentTopicId: "1.1",
+                    viewMode: "ebook",
                     searchQuery: "",
                     activeHighlightTerm: "",
                     fontSize: "text-base",
+                    simGpax: 2.35,
+                    readTopics: ["1.1"],
+                    bookmarkedTopics: ["2.1", "3.2"],
+                    ebookPagesMap: {
+                        "1.1": "1–14",
+                        "1.2": "15–26",
+                        "1.3": "27–38",
+                        "2.1": "39–56",
+                        "2.2": "57–70",
+                        "2.3": "71–88",
+                        "3.1": "89–104",
+                        "3.2": "105–126",
+                        "3.3": "127–152",
+                        "4.1": "153–168",
+                        "4.2": "169–186",
+                    },
                     mobileMenuOpen: false,
                     onboardingModalOpen: false,
                     ebookModalOpen: false,
@@ -3797,7 +4274,27 @@
                             this.onboardingModalOpen = true;
                         }
 
+                        const savedBookmarks = localStorage.getItem(
+                            "rmuti_student_bookmarks",
+                        );
+                        if (savedBookmarks) {
+                            try {
+                                this.bookmarkedTopics =
+                                    JSON.parse(savedBookmarks);
+                            } catch (e) {}
+                        }
+
+                        const savedRead = localStorage.getItem(
+                            "rmuti_student_read",
+                        );
+                        if (savedRead) {
+                            try {
+                                this.readTopics = JSON.parse(savedRead);
+                            } catch (e) {}
+                        }
+
                         this.ensureValidCurrentTopic();
+                        this.markTopicAsRead(this.currentTopicId);
                         this.refreshIcons();
 
                         // Watchers เพื่ออัปเดต Lucide Icons ทุกครั้งที่ DOM เปลี่ยนแปลง
@@ -3805,6 +4302,7 @@
                         this.$watch("currentTopicId", () =>
                             this.refreshIcons(),
                         );
+                        this.$watch("viewMode", () => this.refreshIcons());
                         this.$watch("searchQuery", () => this.refreshIcons());
                         this.$watch("mobileMenuOpen", () =>
                             this.refreshIcons(),
@@ -3886,6 +4384,142 @@
                             0,
                         );
                         return totalAll - this.totalFilteredTopicsCount;
+                    },
+
+                    // Computed: ลำดับบทปัจจุบัน และเลขหน้า E-Book
+                    get currentTopicIndex() {
+                        const idx = this.flatFilteredTopics.findIndex(
+                            (t) => t.id === this.currentTopicId,
+                        );
+                        return idx >= 0 ? idx : 0;
+                    },
+
+                    get ebookPageRange() {
+                        return (
+                            this.ebookPagesMap[this.currentTopicId] || "1–14"
+                        );
+                    },
+
+                    get readTopicsCount() {
+                        return this.flatFilteredTopics.filter((t) =>
+                            this.readTopics.includes(t.id),
+                        ).length;
+                    },
+
+                    get readingProgressPercent() {
+                        if (this.totalFilteredTopicsCount === 0) return 0;
+                        return Math.round(
+                            (this.readTopicsCount /
+                                this.totalFilteredTopicsCount) *
+                                100,
+                        );
+                    },
+
+                    get isCurrentBookmarked() {
+                        return this.bookmarkedTopics.includes(
+                            this.currentTopicId,
+                        );
+                    },
+
+                    get bookmarkedTopicsList() {
+                        return this.flatFilteredTopics.filter((t) =>
+                            this.bookmarkedTopics.includes(t.id),
+                        );
+                    },
+
+                    // Computed: KPI สรุปเกณฑ์สำคัญประจำระดับการศึกษาบน Dashboard
+                    get levelDashboardKpi() {
+                        if (
+                            this.currentLevel === "voc" ||
+                            this.currentLevel === "hvoc"
+                        ) {
+                            return {
+                                label: "เกณฑ์วัดผล ปวช./ปวส.",
+                                value: "เวลาเรียน ≥ 80% • GPAX ≥ 2.00",
+                                sub: "ขาดเกิน 20% ติด ขร./มส. หมดสิทธิ์สอบ",
+                                targetTopicId: "3.1",
+                            };
+                        }
+                        if (
+                            this.currentLevel === "master" ||
+                            this.currentLevel === "phd"
+                        ) {
+                            return {
+                                label: "เกณฑ์จบ ป.โท / ป.เอก",
+                                value: "GPAX ≥ 3.00 • ตีพิมพ์ TCI/Scopus",
+                                sub: "ผ่านเกณฑ์ภาษาอังกฤษและสอบ QE/โครงร่าง",
+                                targetTopicId: "3.3",
+                            };
+                        }
+                        return {
+                            label: "เกณฑ์สภาพนักศึกษา ป.ตรี",
+                            value: "ปกติ ≥ 2.00 • รีไทร์ < 1.50",
+                            sub: "GPAX 1.50–1.99 ติดโปรรอพินิจ (คลิกดูตาราง)",
+                            targetTopicId: "3.2",
+                        };
+                    },
+
+                    // Computed: จำลองตรวจสอบสถานะ GPAX แบบ Interactive
+                    get simGpaxStatus() {
+                        const g = parseFloat(this.simGpax) || 0;
+                        if (
+                            this.currentLevel === "master" ||
+                            this.currentLevel === "phd"
+                        ) {
+                            if (g >= 3.0) {
+                                return {
+                                    color: "green",
+                                    badge: "PASS • สถานะบัณฑิตศึกษาปกติ",
+                                    title: "ผ่านเกณฑ์ GPAX ระดับบัณฑิตศึกษา (≥ 3.00)",
+                                    desc: "สามารถดำเนินการสอบโครงร่าง/ป้องกันจบ และยื่นตีพิมพ์ผลงานวิจัยตามแผนได้",
+                                };
+                            }
+                            return {
+                                color: "red",
+                                badge: "WARNING • ต่ำกว่าเกณฑ์ 3.00",
+                                title: "GPAX ต่ำกว่าเกณฑ์บัณฑิตศึกษา (< 3.00)",
+                                desc: "ต้องลงทะเบียนเรียนรายวิชาเพิ่มหรือรีเกรดเพื่อดึง GPAX ให้ถึง 3.00 จึงจะสำเร็จการศึกษาได้",
+                            };
+                        }
+
+                        if (g >= 3.5) {
+                            return {
+                                color: "green",
+                                badge: "HONORS • เกณฑ์เกียรตินิยมอันดับ 1",
+                                title: "สถานะปกติยอดเยี่ยม (ลุ้นเกียรตินิยมอันดับ 1)",
+                                desc: "GPAX ≥ 3.50 หากไม่เคยติด F/U และไม่เคยรีเกรด มีสิทธิ์ได้รับเกียรตินิยมอันดับ 1",
+                            };
+                        }
+                        if (g >= 2.0) {
+                            return {
+                                color: "green",
+                                badge: "NORMAL • สถานะปกติ",
+                                title: "สถานะนักศึกษาปกติ (GPAX ≥ 2.00)",
+                                desc: "ลงทะเบียนเรียนได้เต็มสิทธิ์ และผ่านเกณฑ์เกรดเฉลี่ยขั้นต่ำเพื่อขอสำเร็จการศึกษา",
+                            };
+                        }
+                        if (g >= 1.75) {
+                            return {
+                                color: "yellow",
+                                badge: "PROBATION • ติดโปรสูง (1.75–1.99)",
+                                title: "สถานะรอพินิจ (ติดโปรสูง)",
+                                desc: "จำกัดหน่วยกิตลงทะเบียนไม่เกิน 16 หน่วยกิต/เทอม ต้องเร่งดึง GPAX ให้ถึง 2.00",
+                            };
+                        }
+                        if (g >= 1.5) {
+                            return {
+                                color: "yellow",
+                                badge: "PROBATION • ติดโปรต่ำ (1.50–1.74)",
+                                title: "สถานะรอพินิจ (ติดโปรต่ำ — เฝ้าระวังสูง)",
+                                desc: "ต้องทำ GPAX ให้ถึง 1.75 ภายในปีการศึกษาถัดไป มิฉะนั้นจะพ้นสภาพนักศึกษา",
+                            };
+                        }
+                        return {
+                            color: "red",
+                            badge: "DANGER • พ้นสภาพนักศึกษา (< 1.50)",
+                            title: "มีความเสี่ยงพ้นสภาพนักศึกษา (รีไทร์)",
+                            desc: "หากสิ้นภาคเรียนที่ 2 ได้ GPAX ต่ำกว่า 1.50 จะพ้นสภาพทันที ควรรีบปรึกษาอาจารย์ที่ปรึกษา",
+                        };
                     },
 
                     // Computed: หัวข้อที่กำลังเปิดอ่านอยู่
@@ -4005,11 +4639,65 @@
                     },
 
                     // Actions
+                    getTopicPageNumber(topicId) {
+                        return this.ebookPagesMap[topicId] || "1–10";
+                    },
+
+                    markTopicAsRead(topicId) {
+                        if (!topicId) return;
+                        if (!this.readTopics.includes(topicId)) {
+                            this.readTopics.push(topicId);
+                            localStorage.setItem(
+                                "rmuti_student_read",
+                                JSON.stringify(this.readTopics),
+                            );
+                        }
+                    },
+
+                    toggleBookmark(topicId) {
+                        if (!topicId) return;
+                        if (this.bookmarkedTopics.includes(topicId)) {
+                            this.bookmarkedTopics =
+                                this.bookmarkedTopics.filter(
+                                    (id) => id !== topicId,
+                                );
+                            this.showToast(
+                                "นำที่คั่นหนังสือออกแล้ว",
+                                "ยกเลิกการคั่นหน้าบทที่ " + topicId,
+                            );
+                        } else {
+                            this.bookmarkedTopics.push(topicId);
+                            this.showToast(
+                                "คั่นหน้า E-Book สำเร็จ (★)",
+                                "บันทึกบทที่ " +
+                                    topicId +
+                                    " ลงในรายการที่คั่นหนังสือแล้ว",
+                            );
+                        }
+                        localStorage.setItem(
+                            "rmuti_student_bookmarks",
+                            JSON.stringify(this.bookmarkedTopics),
+                        );
+                    },
+
+                    flipPrevPage() {
+                        if (this.prevTopic) {
+                            this.selectTopic(this.prevTopic.id, false);
+                        }
+                    },
+
+                    flipNextPage() {
+                        if (this.nextTopic) {
+                            this.selectTopic(this.nextTopic.id, false);
+                        }
+                    },
+
                     selectEducationLevel(levelId) {
                         this.currentLevel = levelId;
                         localStorage.setItem("rmuti_student_level", levelId);
                         this.onboardingModalOpen = false;
                         this.ensureValidCurrentTopic();
+                        this.markTopicAsRead(this.currentTopicId);
                         this.showToast(
                             "เปลี่ยนระดับการศึกษาสำเร็จ",
                             "กำลังแสดงข้อมูลส่วนกลาง + เฉพาะระดับ " +
@@ -4029,6 +4717,7 @@
                     selectFirstAvailableTopic() {
                         if (this.flatFilteredTopics.length > 0) {
                             this.currentTopicId = this.flatFilteredTopics[0].id;
+                            this.markTopicAsRead(this.currentTopicId);
                         }
                     },
 
@@ -4045,6 +4734,8 @@
 
                     selectTopic(topicId, fromMobile = false) {
                         this.currentTopicId = topicId;
+                        this.viewMode = "ebook";
+                        this.markTopicAsRead(topicId);
                         this.searchQuery = "";
                         this.activeHighlightTerm = "";
                         if (fromMobile) {
@@ -4056,6 +4747,8 @@
                     openTopicFromSearch(topicId) {
                         const term = this.searchQuery.trim();
                         this.currentTopicId = topicId;
+                        this.viewMode = "ebook";
+                        this.markTopicAsRead(topicId);
                         this.activeHighlightTerm = term;
                         this.searchQuery = "";
                         window.scrollTo({ top: 0, behavior: "smooth" });
